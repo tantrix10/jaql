@@ -1,5 +1,5 @@
 #include <iostream>
-#include "./jaql/token_type.h"
+#include "token_type.h"
 
 namespace Jaql{
     class Token{

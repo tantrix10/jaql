@@ -1,4 +1,4 @@
-#include "../jaql/jaql.h"
+#include "jaql.h"
 
 namespace Jaql
 {
