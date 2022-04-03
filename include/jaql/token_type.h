@@ -48,6 +48,6 @@ namespace Jaql
         VAR,
         WHILE,
 
-        EOF
+        EOJF // End of Jaql File. Because EOF is marco defined to be -1
     };
 };
