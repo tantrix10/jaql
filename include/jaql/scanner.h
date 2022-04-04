@@ -24,7 +24,10 @@ namespace Jaql
         void add_token(TokenType type);
         bool match(char expected);
         char peek();
+        char peek_next();
         void string();
+        void number();
+        void identifier();
 
         int start = 0;
         int current = 0;

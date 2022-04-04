@@ -3,6 +3,7 @@
 #include "jaql.h"
 
 #include <any>
+#include <cctype>
 
 namespace Jaql
 {
@@ -66,21 +67,56 @@ namespace Jaql
                 break;
 
             case '\n':
-                line++;
+                ++line;
                 break;
             
             case '"': string(); break;
 
             default:
-                Jaql::error(line, "Unexpected character.");
-                break;
+                if (std::isdigit(c))
+                {
+                    number();
+                } else if (std::isalpha(c) || c == '_'){
+                    identifier();
+                }
+                else{
+                    Jaql::error(line, "Unexpected character.");
+                    break;
+                }
         }
+    }
+
+    void Scanner::identifier()
+    {
+        while ( std::isdigit(peek()) || std::isalpha(peek()) || peek() == '_' )
+        {
+            advance();
+        }
+        std::string ident = source.substr(start, current-start);
+        
+    }
+
+    void Scanner::number()
+    {
+        while (std::isdigit(peek())) advance();
+
+        if (peek() == '.' && std::isdigit(peek_next())){
+            advance();
+
+            while (std::isdigit(peek())) advance;
+        }
+        add_token(TokenType::NUMBER, std::stod(source.substr(start, current-start)) );
+    }
+
+    char Scanner::peek_next(){
+        if (current + 1 >= source.length()) return '\0';
+        return source.at(current+1);
     }
 
     void Scanner::string()
     {
         while (peek() != '"' && !is_at_end()) {
-        if (peek() == '\n') line++;
+        if (peek() == '\n') ++line;
         advance();
     }
 
