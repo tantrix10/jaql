@@ -9,7 +9,24 @@ namespace Jaql
 {
     Scanner::Scanner(std::string source)
     {
-        
+        reserved_words = {
+            {"and", TokenType::AND},
+            {"class", TokenType::CLASS},
+            {"else", TokenType::ELSE},
+            {"false", TokenType::FALSE},
+            {"for", TokenType::FOR},
+            {"fun", TokenType::FUN},
+            {"if", TokenType::IF},
+            {"nil", TokenType::NIL},
+            {"or", TokenType::OR},
+            {"print", TokenType::PRINT},
+            {"return", TokenType::RETURN},
+            {"super", TokenType::SUPER},
+            {"this", TokenType::THIS},
+            {"true", TokenType::TRUE},
+            {"var", TokenType::VAR},
+            {"while", TokenType::WHILE},
+        };
     }
 
 
@@ -20,6 +37,7 @@ namespace Jaql
             scan_token();
         }
         tokens.emplace_back(TokenType::EOJF, "", line);
+        return tokens;
     }
 
     bool Scanner::is_at_end()
@@ -93,6 +111,12 @@ namespace Jaql
             advance();
         }
         std::string ident = source.substr(start, current-start);
+
+        if (const auto id=reserved_words.find(ident); id != reserved_words.end()){
+            add_token(id->second);
+        }else{
+            add_token(TokenType::IDENTIFIER);
+        }
         
     }
 
@@ -103,7 +127,7 @@ namespace Jaql
         if (peek() == '.' && std::isdigit(peek_next())){
             advance();
 
-            while (std::isdigit(peek())) advance;
+            while (std::isdigit(peek())) advance();
         }
         add_token(TokenType::NUMBER, std::stod(source.substr(start, current-start)) );
     }
