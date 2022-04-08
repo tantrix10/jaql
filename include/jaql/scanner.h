@@ -1,5 +1,6 @@
 #include <string>
 #include <vector>
+#include <unordered_map>
 #include <any>
 
 #include "token.h"
@@ -18,6 +19,7 @@ namespace Jaql
 
         std::string source;
         std::vector<Token> tokens;
+        std::unordered_map<std::string, TokenType> reserved_words;
         bool is_at_end();
         char advance();
         void add_token(TokenType type, std::any literal );
