@@ -1,10 +1,14 @@
 #include <iostream>
 #include <fstream>
+#include "scanner.h"
 
 
 void run(const std::string code)
 {
     // scan
+    Jaql::Scanner scanner(code);
+    scanner.scan_tokens();
+
     // parse
     // run
 }
