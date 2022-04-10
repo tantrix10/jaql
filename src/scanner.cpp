@@ -1,7 +1,7 @@
 #include "scanner.h"
 #include "token_type.h"
 #include "jaql.h"
-
+#include <iostream>
 #include <any>
 #include <cctype>
 
@@ -38,6 +38,10 @@ namespace Jaql
             scan_token();
         }
         tokens.emplace_back(TokenType::EOJF, "", line);
+
+        for(const auto& token: tokens) {
+            std::cout << token.to_string() << "\n";
+        }
         return tokens;
     }
 
@@ -141,21 +145,21 @@ namespace Jaql
     void Scanner::string()
     {
         while (peek() != '"' && !is_at_end()) {
-        if (peek() == '\n') ++line;
+            if (peek() == '\n') ++line;
+            advance();
+        }
+
+        if (is_at_end()) {
+            Jaql::error(line, "Unterminated string.");
+            return;
+        }
+
+        // The closing ".
         advance();
-    }
 
-    if (is_at_end()) {
-      Jaql::error(line, "Unterminated string.");
-      return;
-    }
-
-    // The closing ".
-    advance();
-
-    // Trim the surrounding quotes.
+        // Trim the surrounding quotes.
         std::string value = source.substr(start + 1, current - 2);
-    add_token(TokenType::STRING, value);
+        add_token(TokenType::STRING, value);
     }
 
     char Scanner::peek()
