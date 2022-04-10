@@ -153,7 +153,7 @@ namespace Jaql
     advance();
 
     // Trim the surrounding quotes.
-    std::string value = source.substr(start + 1, current - 1);
+        std::string value = source.substr(start + 1, current - 2);
     add_token(TokenType::STRING, value);
     }
 
