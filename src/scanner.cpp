@@ -7,7 +7,8 @@
 
 namespace Jaql
 {
-    Scanner::Scanner(std::string source)
+    Scanner::Scanner(std::string source):
+    source(std::move(source))
     {
         reserved_words = {
             {"and", TokenType::AND},
