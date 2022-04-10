@@ -49,7 +49,7 @@ namespace Jaql
     {
         char c = advance();
         switch (c){
-            case '(': add_token(TokenType::LEFT_PAREN);
+            case '(': add_token(TokenType::LEFT_PAREN); break;
             case ')': add_token(TokenType::RIGHT_PAREN); break;
             case '{': add_token(TokenType::LEFT_BRACE); break;
             case '}': add_token(TokenType::RIGHT_BRACE); break;
