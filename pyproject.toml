@@ -1,0 +1,59 @@
+[tool.poetry]
+name = "jaql"
+version = "0.1.0"
+description = "Jaql, Just another quantum language"
+authors = ["Jamie Friel <jamiefriel@googlemail.com>"]
+license = "Apache 2.0"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+black = "^22.12.0"
+isort = "^5.11.3"
+pytest = "^7.2.0"
+flake8 = "^6.0.0"
+pytest-flake8 = "^1.1.1"
+
+[tool.poetry.group.dev.dependencies]
+poethepoet = "^0.16.5"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+
+[tool.isort]
+profile = "black"
+
+[tool.black]
+line-length = 88
+
+[tool.poe.tasks]
+test   = "pytest" # TODO: issues with pytest flake8, fix later
+format_black = "black ./"
+format_isort = "isort ./"
+flaker = "flake8 ./"
+clean = """
+rm -rf .coverage
+       .mypy_cache
+       .pytest_cache
+       dist
+       ./**/__pycache__
+"""
+
+[tool.poe.tasks.format]
+sequence = ["clean", "format_black", "format_isort"]
+help     = "Format it all."
+
+[tool.poe.tasks.tests]
+sequence = ["format", "test"]
+help = "Run formatters, then run tests."
+
+[tool.poe.tasks.time]
+shell = """
+from datetime import datetime
+
+print(datetime.now())
+"""
+interpreter = "python"
+
