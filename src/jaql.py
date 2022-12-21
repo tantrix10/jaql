@@ -1,7 +1,8 @@
 import logging
 
-from src_py.exceptions import JaqlException
-from src_py.scanner import Scanner
+from src.exceptions import JaqlException
+from src.scanner import Scanner
+
 
 class Jaql:
     def __init__(self, code: str) -> None:
@@ -16,5 +17,3 @@ class Jaql:
     def add_error(self, line: int, message: str):
         self.error = True
         self.report(line, "", message)
-
-    

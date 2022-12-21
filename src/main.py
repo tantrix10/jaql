@@ -1,10 +1,11 @@
-from src_py.jaql import Jaql
-from src_py.scanner import Scanner
-
-import logging
 import argparse
+import logging
 import sys
 from os.path import isfile
+
+from src.jaql import Jaql
+from src.scanner import Scanner
+
 
 def run(code: str):
     scanner = Scanner(code)
@@ -14,18 +15,19 @@ def run(code: str):
 def run_file(file_name: str):
     print(f"Reading file: [[{file_name}]]")
     if isfile(file_name):
-        code = ''
+        code = ""
         with open(file=file_name) as file:
             for line in file:
-                print(line)
-                code += line + '\n'
+                # print(line)
+                code += line + "\n"
             run(code)
     else:
         raise FileNotFoundError(f"Cannot find file: {file_name}")
 
+
 def run_interpreter():
     print("ENTERING JAQL INTERPRETER")
-    code = ''
+    code = ""
     running = True
 
     while running:
@@ -36,9 +38,12 @@ def run_interpreter():
             print("Exiting jaql")
             running = False
 
+
 def main():
     if (args_count := len(sys.argv)) > 2:
-        print("Too many input args. ./lox <script location> or ./lox for interpreter mode")
+        print(
+            "Too many input args. ./lox <script location> or ./lox for interpreter mode"
+        )
         raise SystemExit(2)
     elif args_count == 2:
         print(f"Running file: {sys.argv[1]}")
@@ -46,8 +51,9 @@ def main():
     else:
         print("Entering interpreter.")
         run_interpreter()
-    
+
     return 0
+
 
 if __name__ == "__main__":
     main()

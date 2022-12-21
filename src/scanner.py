@@ -1,8 +1,8 @@
 import logging
 
-from src_py.exceptions import JaqlException
-from src_py.token import Token
-from src_py.token_type import TokenType
+from src.exceptions import JaqlException
+from src.token import Token
+from src.token_type import TokenType
 
 
 class Scanner:
@@ -87,9 +87,7 @@ class Scanner:
             self.advance()
         if self.peek() == "." and self.peek_next().isdigit():
             self.advance()
-        self.add_token(
-            TokenType.NUMBER, float(self.source[self.start : self.current])
-        )
+        self.add_token(TokenType.NUMBER, float(self.source[self.start : self.current]))
 
     def identifier(self):
         while self.peek().isalnum() or self.peek() == "_":
@@ -103,7 +101,6 @@ class Scanner:
 
     def scan_token(self):
         c = self.advance()
-        print(c)
         match c:
             case "(":
                 self.add_token(TokenType.LEFT_PAREN)
@@ -154,11 +151,9 @@ class Scanner:
                 self.add_token(token_type)
 
             case "/":
-                print("start comment")
                 if self.match("/"):
                     while self.peek() != "\n" and not self.is_at_end():
                         self.advance()
-                    print("end comment")
                 else:
                     self.add_token(TokenType.SLASH)
 

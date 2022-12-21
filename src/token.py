@@ -1,6 +1,6 @@
 from typing import Any
 
-from src_py.token_type import TokenType
+from src.token_type import TokenType
 
 
 class Token:

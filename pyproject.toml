@@ -28,8 +28,13 @@ profile = "black"
 [tool.black]
 line-length = 88
 
+[tool.pytest.ini_options]
+pythonpath = [
+  "."
+]
+
 [tool.poe.tasks]
-test   = "pytest" # TODO: issues with pytest flake8, fix later
+test   = "pytest tests/" # TODO: issues with pytest flake8, fix later
 format_black = "black ./"
 format_isort = "isort ./"
 flaker = "flake8 ./"
@@ -40,6 +45,7 @@ rm -rf .coverage
        dist
        ./**/__pycache__
 """
+test_run = "python -m src.main '/home/jamie/code/jaql/tests/test_files/test.jaql'"
 
 [tool.poe.tasks.format]
 sequence = ["clean", "format_black", "format_isort"]
