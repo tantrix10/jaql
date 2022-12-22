@@ -1,15 +1,20 @@
-import argparse
-import logging
 import sys
 from os.path import isfile
+from src.ast_printer import ASTPrinter
 
 from src.jaql import Jaql
+from src.parser import Parser
 from src.scanner import Scanner
 
 
 def run(code: str):
     scanner = Scanner(code)
-    scanner.scan_tokens()
+    tokens = scanner.scan_tokens()
+    parser = Parser(tokens)
+    expression = parser.parse()
+    # print(tokens)
+    printer = ASTPrinter()
+    print(printer.print(expression))
 
 
 def run_file(file_name: str):

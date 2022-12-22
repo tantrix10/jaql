@@ -23,9 +23,47 @@ from src.token_type import TokenType
         ("true", TokenType.TRUE),
         ("var", TokenType.VAR),
         ("while", TokenType.WHILE),
+        ("(", TokenType.LEFT_PAREN),
+        (")", TokenType.RIGHT_PAREN),
+        ("{", TokenType.LEFT_BRACE),
+        ("}", TokenType.RIGHT_BRACE),
+        (",", TokenType.COMMA),
+        (".", TokenType.DOT),
+        ("-", TokenType.MINUS),
+        ("+", TokenType.PLUS),
+        (";", TokenType.SEMICOLON),
+        ("*", TokenType.STAR),
+        ("!=", TokenType.BANG_EQUAL),
+        ("!", TokenType.BANG),
+        ("==", TokenType.EQUAL_EQUAL),
+        ("=", TokenType.EQUAL),
+        ("<=", TokenType.LESS_EQUAL),
+        ("<", TokenType.LESS),
+        (">=", TokenType.GREATER_EQUAL),
+        (">", TokenType.GREATER),
+        ("/", TokenType.SLASH),
     ),
 )
-def test_reserved_words_token_parsing(input, token_type):
+def test_reserved_words_and_tokens_parsing(input, token_type):
     scanner = Scanner(input)
     scanner.scan_tokens()
     assert scanner.tokens[0].type == token_type
+
+
+@pytest.mark.parametrize(
+    "input",
+    (
+        ("\r",),
+        ("\t",),
+        ("\n",),
+        (" ",),
+    ),
+)
+def test_none_tokens(input):
+    """
+    Note: You cannot have a file of just //, '', or whitespace
+    greater than 1-space. Something to fix
+    """
+    scanner = Scanner(input)
+    scanner.scan_tokens()
+    assert scanner.tokens[0].type == TokenType.EOJF

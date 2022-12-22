@@ -46,14 +46,19 @@ rm -rf .coverage
        ./**/__pycache__
 """
 test_run = "python -m src.main '/home/jamie/code/jaql/tests/test_files/test.jaql'"
+gen = "python -m src.tools.generate_ast /home/jamie/code/jaql/src/types/"
+
 
 [tool.poe.tasks.format]
-sequence = ["clean", "format_black", "format_isort"]
+sequence = ["format_black", "format_isort", "clean"]
 help     = "Format it all."
 
 [tool.poe.tasks.tests]
-sequence = ["format", "test"]
+sequence = ["format", "test", "clean"]
 help = "Run formatters, then run tests."
+
+[tool.poe.tasks.file_gen]
+sequence = ["clean", "gen", "format"]
 
 [tool.poe.tasks.time]
 shell = """
