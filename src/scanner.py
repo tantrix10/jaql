@@ -1,13 +1,16 @@
 import logging
 
 from src.exceptions import JaqlException
+from src.jaql import Jaql
 from src.token import Token
 from src.token_type import TokenType
 
 
 class Scanner:
-    def __init__(self, source: str) -> None:
+    def __init__(self, source: str, jaql: Jaql, debug=False) -> None:
         self.source = source
+        self.jaql = jaql
+        self.debug = debug
         self.size = len(source)
         self.current = 0
         self.start = 0
@@ -76,7 +79,7 @@ class Scanner:
         if self.is_at_end():
             # TODO: raise exceptions up the stack proper
             # Maybe want the main jaql to inherit everything?
-            raise JaqlException(self.line, "Unterminated sring")
+            self.jaql.add_error(self.line, "Unterminated sring")
 
         self.advance()
         value = self.source[self.start + 1 : self.current - 1]
@@ -85,8 +88,8 @@ class Scanner:
     def number(self):
         while self.peek().isdigit():
             self.advance()
-        if self.peek() == "." and self.peek_next().isdigit():
-            self.advance()
+            if self.peek() == "." and self.peek_next().isdigit():
+                self.advance()
         self.add_token(TokenType.NUMBER, float(self.source[self.start : self.current]))
 
     def identifier(self):
@@ -177,7 +180,7 @@ class Scanner:
                 elif c.isalpha() or c == "_":
                     self.identifier()
                 else:
-                    raise JaqlException(self.line, "Unexpected character.")
+                    self.jaql.add_error(self.line, "Unexpected character.")
 
     def scan_tokens(self):
         while not self.is_at_end():
@@ -186,6 +189,7 @@ class Scanner:
 
         self.tokens.append(Token(TokenType.EOJF, "", self.line))
 
-        for token in self.tokens:
-            print(token.to_string())
+        if self.debug:
+            for token in self.tokens:
+                print(token.to_string())
         return self.tokens

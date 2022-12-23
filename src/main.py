@@ -1,20 +1,26 @@
 import sys
 from os.path import isfile
-from src.ast_printer import ASTPrinter
+
 
 from src.jaql import Jaql
 from src.parser import Parser
 from src.scanner import Scanner
-
+from src.interpreter import Interpreter
 
 def run(code: str):
-    scanner = Scanner(code)
+    jaql = Jaql(code)
+
+    scanner = Scanner(source=code, jaql=jaql, debug=False)
     tokens = scanner.scan_tokens()
-    parser = Parser(tokens)
+    jaql.check_errors()
+
+    parser = Parser(tokens, jaql=jaql, debug=True)
     expression = parser.parse()
-    # print(tokens)
-    printer = ASTPrinter()
-    print(printer.print(expression))
+    jaql.check_errors()
+
+    interpreter = Interpreter(jaql=jaql)
+    interpreter.interpret(expression)
+    jaql.check_errors()
 
 
 def run_file(file_name: str):
@@ -51,10 +57,8 @@ def main():
         )
         raise SystemExit(2)
     elif args_count == 2:
-        print(f"Running file: {sys.argv[1]}")
         run_file(sys.argv[1])
     else:
-        print("Entering interpreter.")
         run_interpreter()
 
     return 0
