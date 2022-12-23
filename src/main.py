@@ -1,11 +1,11 @@
 import sys
 from os.path import isfile
 
-
+from src.interpreter import Interpreter
 from src.jaql import Jaql
 from src.parser import Parser
 from src.scanner import Scanner
-from src.interpreter import Interpreter
+
 
 def run(code: str):
     jaql = Jaql(code)
@@ -19,7 +19,7 @@ def run(code: str):
     jaql.check_errors()
 
     interpreter = Interpreter(jaql=jaql)
-    interpreter.interpret(expression)
+    interpreter.interpret(expression)  # type: ignore
     jaql.check_errors()
 
 

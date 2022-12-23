@@ -8,7 +8,6 @@ from src.types.Expr import Binary, Expr, Grouping, Literal, Unary
 
 
 class Interpreter:
-
     def __init__(self, jaql):
         self.jaql = jaql
 
@@ -18,14 +17,14 @@ class Interpreter:
             print(self.stringify(value))
         except JaqlRuntimeError as e:
             self.jaql.add_runtime_error(e)
-    
+
     def stringify(self, value):
         if value is None:
             return "nill"
         if isinstance(value, Number):
             text = str(value)
             if text.endswith(".0"):
-                text =  text[0:-2]
+                text = text[0:-2]
             return text
         return str(value)
 
@@ -52,15 +51,16 @@ class Interpreter:
     def check_number_operands(self, operator: Token, left: Any, right: Any):
         if isinstance(left, Number) and isinstance(right, Number):
             return True
-        raise JaqlRuntimeError(operator,
-            f"Operand {left} and {right} for operator {operator} must be a number."
+        raise JaqlRuntimeError(
+            operator,
+            f"Operand {left} and {right} for operator {operator} must be a number.",
         )
-    
+
     def check_number_operand(self, operator: Token, operand: Any):
         if isinstance(operand, Number):
             return True
-        raise JaqlRuntimeError(operator, 
-            f"Operand {operand} for operator {operator} must be a number."
+        raise JaqlRuntimeError(
+            operator, f"Operand {operand} for operator {operator} must be a number."
         )
 
     def visitLiteralExpr(self, expr: Literal):
@@ -101,7 +101,12 @@ class Interpreter:
 
                 if isinstance(left, str) and isinstance(right, str):
                     return left + right
-                self.jaql.add_runtime_error(JaqlRuntimeError(expr.operator, f"{left} and {right} must be two number or two strings."))
+                self.jaql.add_runtime_error(
+                    JaqlRuntimeError(
+                        expr.operator,
+                        f"{left} and {right} must be two number or two strings.",
+                    )
+                )
             case TokenType.GREATER:
                 self.check_number_operands(expr.operator, left, right)
                 return left > right  # type: ignore

@@ -1,8 +1,9 @@
+from src.ast_printer import ASTPrinter
 from src.exceptions import JaqlException, JaqlParseException
 from src.token import Token
 from src.token_type import TokenType
 from src.types.Expr import Binary, Expr, Grouping, Literal, Unary
-from src.ast_printer import ASTPrinter
+
 
 class Parser:
     def __init__(self, tokens: list[Token], jaql, debug=False) -> None:
@@ -13,15 +14,28 @@ class Parser:
         self.current = 0
         self.has_error = False
 
+    def statement(self):
+        if self.match(
+            [
+                TokenType.PRINT,
+            ]
+        ):
+            return self.print_statement()
+        return self.expression_statement()
+
     def parse(self):
-        try:
-            exprs = self.expression()
-            if self.debug:
-                printer = ASTPrinter()
-                print(printer.print(expr=exprs))
-            return exprs
-        except JaqlParseException:
-            return None
+        # try:
+        #     exprs = self.expression()
+        #     if self.debug:
+        #         printer = ASTPrinter()
+        #         print(printer.print(expr=exprs))
+        #     return exprs
+        # except JaqlParseException:
+        #     return None
+        statements = []
+        while not self.is_at_end():
+            statements.append(self.statement())
+        return statements
 
     def error(self, token: Token, message: str):
         self.jaql.add_error(token.line, message)

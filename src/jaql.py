@@ -18,13 +18,13 @@ class Jaql:
         print("ERROR:")
         self.report(line, "", message)
         # raise JaqlException()
-    
+
     def add_runtime_error(self, error):
         self.runtime_error = True
         print("ERROR:")
         print(error.get_message())
         # raise JaqlException(error.get_message())
-    
+
     def check_errors(self):
         if self.error:
             sys.exit(65)

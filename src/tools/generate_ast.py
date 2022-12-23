@@ -28,6 +28,8 @@ def define_ast(output_dir: str, base_name: str, types: list[str]):
         file.write("from abc import ABC, abstractmethod\n")
         file.write("from typing import Any\n")
         file.write("from src.token import Token\n")
+        if base_name == "Stmt":
+            file.write("from src.types.Expr import Expr")
         file.write("\n \n")
         file.write(f"class {base_name}(ABC):\n")
         file.write("    pass\n")
@@ -56,6 +58,11 @@ def main():
             "Literal  :: value: Any",
             "Unary    :: operator: Token, right: Expr",
         ],
+    )
+    define_ast(
+        output_dir,
+        "Stmt",
+        ["Expression :: expression: Expr", "Print      :: expression: Expr"],
     )
 
 
