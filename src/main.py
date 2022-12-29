@@ -18,6 +18,12 @@ def run(code: str):
     statements = parser.parse()
     jaql.check_errors()
 
+    # a = statements[2].statements[0]
+    # b = statements[2].statements[1]
+
+    # print(a.name.lexeme, a.initialiser.value)
+    # print(b.condition)
+
     interpreter = Interpreter(jaql=jaql)
     interpreter.interpret(statements)  # type: ignore
     jaql.check_errors()

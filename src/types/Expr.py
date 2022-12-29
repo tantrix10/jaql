@@ -1,6 +1,6 @@
 # Filegen-ed, do not modify in place
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Optional
 
 from src.token import Token
 
@@ -46,6 +46,16 @@ class Literal(Expr):
 
     def accept(self, visitor):
         return visitor.visitLiteralExpr(self)
+
+
+class Logical(Expr):
+    def __init__(self, left: Expr, operator: Token, right: Expr):
+        self.left = left
+        self.operator = operator
+        self.right = right
+
+    def accept(self, visitor):
+        return visitor.visitLogicalExpr(self)
 
 
 class Unary(Expr):

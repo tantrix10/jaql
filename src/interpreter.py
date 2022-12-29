@@ -6,8 +6,17 @@ from src.exceptions import JaqlRuntimeError
 from src.token import Token
 from src.token_type import TokenType
 from src.types import Stmt
-from src.types.Expr import Assign, Binary, Expr, Grouping, Literal, Unary, Variable
-from src.types.Stmt import Expression, Print, Stmt, Var
+from src.types.Expr import (
+    Assign,
+    Binary,
+    Expr,
+    Grouping,
+    Literal,
+    Logical,
+    Unary,
+    Variable,
+)
+from src.types.Stmt import Block, Expression, If, Print, Stmt, Var, While
 
 
 class Interpreter:
@@ -70,6 +79,22 @@ class Interpreter:
             operator, f"Operand {operand} for operator {operator} must be a number."
         )
 
+    def execute_block(self, statements: list[Stmt], environment: Environment):
+        previous = self.environment
+        self.environment = environment
+
+        for statement in statements:
+            self.execute(statement)
+
+        self.environment = previous
+
+    def visitIfStmt(self, stmt: If):
+        if self.is_truthy(self.evaluate(stmt.condition)):
+            self.execute(stmt.then_branch)
+        elif stmt.else_branch is not None:
+            self.execute(stmt.else_branch)
+        return None
+
     def visitExpressionStmt(self, stmt: Expression):
         self.evaluate(stmt.expression)
         return None
@@ -84,6 +109,17 @@ class Interpreter:
         if stmt.initialiser is not None:
             value = self.evaluate(stmt.initialiser)
         self.environment.define(name=stmt.name.lexeme, value=value)
+        return None
+
+    def visitBlockStmt(self, stmt: Block):
+        self.execute_block(
+            stmt.statements, Environment(jaql=self.jaql, enclosing=self.environment)
+        )
+        return None
+    
+    def visitWhileStmt(self, stmt: While):
+        while self.is_truthy(self.evaluate(stmt.condition)):
+            self.execute(stmt.body)
         return None
 
     def visitAssignExpr(self, expr: Assign):
@@ -111,6 +147,17 @@ class Interpreter:
                 return not self.is_truthy(right)
 
         return None
+
+    def visitLogicalExpr(self, expr: Logical):
+        left = self.evaluate(expr.left)
+
+        if expr.operator.type == TokenType.OR:
+            if self.is_truthy(left):
+                return left
+        elif not self.is_truthy(left):
+            return left
+
+        return self.evaluate(expr.right)
 
     def visitBinaryExpr(self, expr: Binary):
         left = self.evaluate(expr.left)

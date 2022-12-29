@@ -26,7 +26,7 @@ def define_ast(output_dir: str, base_name: str, types: list[str]):
     with open(file_path, "w") as file:
         file.write("# Filegen-ed, do not modify in place\n")
         file.write("from abc import ABC, abstractmethod\n")
-        file.write("from typing import Any\n")
+        file.write("from typing import Any, Optional\n")
         file.write("from src.token import Token\n")
         if base_name == "Stmt":
             file.write("from src.types.Expr import Expr")
@@ -57,6 +57,7 @@ def main():
             "Binary   :: left: Expr, operator: Token, right: Expr",
             "Grouping :: expression: Expr",
             "Literal  :: value: Any",
+            "Logical  :: left: Expr, operator: Token, right: Expr",
             "Unary    :: operator: Token, right: Expr",
             "Variable :: name: Token",
         ],
@@ -65,9 +66,12 @@ def main():
         output_dir,
         "Stmt",
         [
+            "Block      :: statements: list[Stmt]",
             "Expression :: expression: Expr",
+            "If         :: condition: Expr, then_branch: Stmt, else_branch: Optional[Stmt]",
             "Print      :: expression: Expr",
             "Var        :: name: Token, initialiser: Expr",
+            "While      :: condition: Expr, body: Stmt",
         ],
     )
 

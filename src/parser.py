@@ -5,8 +5,17 @@ from src.exceptions import JaqlException, JaqlParseException
 from src.jaql import Jaql
 from src.token import Token
 from src.token_type import TokenType
-from src.types.Expr import Assign, Binary, Expr, Grouping, Literal, Unary, Variable
-from src.types.Stmt import Expression, Print, Var
+from src.types.Expr import (
+    Assign,
+    Binary,
+    Expr,
+    Grouping,
+    Literal,
+    Logical,
+    Unary,
+    Variable,
+)
+from src.types.Stmt import Block, Expression, If, Print, Stmt, Var, While
 
 
 class Parser:
@@ -19,12 +28,28 @@ class Parser:
         self.has_error = False
 
     def statement(self):
+        if self.match([TokenType.FOR,]):
+            return self.for_statement()
+        if self.match(
+            [
+                TokenType.IF,
+            ]
+        ):
+            return self.if_statement()
         if self.match(
             [
                 TokenType.PRINT,
             ]
         ):
             return self.print_statement()
+        if self.match([TokenType.WHILE]):
+            return self.while_statement()
+        if self.match(
+            [
+                TokenType.LEFT_BRACE,
+            ]
+        ):
+            return Block(self.block())
         return self.expression_statement()
 
     def declaration(self):
@@ -54,14 +79,6 @@ class Parser:
         return Var(name, initialiser)  # type: ignore
 
     def parse(self):
-        # try:
-        #     exprs = self.expression()
-        #     if self.debug:
-        #         printer = ASTPrinter()
-        #         print(printer.print(expr=exprs))
-        #     return exprs
-        # except JaqlParseException:
-        #     return None
         statements = []
         while not self.is_at_end():
             statements.append(self.declaration())
@@ -93,6 +110,80 @@ class Parser:
                 case TokenType.RETURN:
                     return
             self.advance()
+
+    def block(self):
+        statements = []
+
+        while (not self.check(TokenType.RIGHT_BRACE)) and (not self.is_at_end()):
+            statements.append(self.declaration())
+
+        self.consume(TokenType.RIGHT_BRACE, "Expect '}' after block.")
+        return statements
+    
+    def for_statement(self):
+        self.consume(TokenType.LEFT_PAREN, "Expect '(' after for.")
+
+        initialiser: Optional[Stmt]
+
+        if self.match([TokenType.SEMICOLON,]):
+            initialiser = None
+        elif self.match([TokenType.VAR,]):
+            initialiser = self.var_declaration()
+        else:
+            initialiser = self.expression_statement()
+        
+        condition: Optional[Expr] = None
+
+        if not self.check(TokenType.SEMICOLON):
+            condition = self.expression()
+            self.consume(TokenType.SEMICOLON, "Expect ';' after loop condition")
+
+        increment: Optional[Expr] = None
+
+        if not self.check(TokenType.RIGHT_PAREN):
+            increment = self.expression()
+            self.consume(TokenType.RIGHT_PAREN, "Expect ')' after for clauses.")
+
+        body: Stmt = self.statement()
+
+        if increment is not None:
+            body = Block([body, Expression(increment)])
+        
+        if condition is None:
+            condition = Literal(True)
+        
+        body = While(condition, body)
+
+        if initialiser is not None:
+            body = Block([initialiser, body])
+
+        return body
+
+    
+    def while_statement(self):
+        self.consume(TokenType.LEFT_PAREN, "Expect '(' after while.")
+        condition: Expr = self.expression()
+        self.consume(TokenType.RIGHT_PAREN, "Expect ')' after while condition.")
+        body: Stmt = self.statement()
+
+        return While(condition, body)
+
+    def if_statement(self):
+        self.consume(TokenType.LEFT_PAREN, "Expect '(' after if.")
+        condition: Expr = self.expression()
+        self.consume(TokenType.RIGHT_PAREN, "Expect ')' after if condition.")
+
+        then_branch: Stmt = self.statement()
+        else_branch: Optional[Stmt] = None
+
+        if self.match(
+            [
+                TokenType.ELSE,
+            ]
+        ):
+            else_branch = self.statement()
+
+        return If(condition, then_branch, else_branch)
 
     def print_statement(self):
         value: Expr = self.expression()
@@ -220,11 +311,37 @@ class Parser:
             expr = Binary(expr, operator, right)
         return expr
 
+    def and_(self):
+        expr: Expr = self.equality()
+
+        while self.match(
+            [
+                TokenType.AND,
+            ]
+        ):
+            operator: Token = self.previous()
+            right: Expr = self.equality()
+            expr = Logical(expr, operator, right)
+        return expr
+
+    def or_(self):
+        expr: Expr = self.and_()
+
+        while self.match(
+            [
+                TokenType.OR,
+            ]
+        ):
+            operator: Token = self.previous()
+            right: Expr = self.and_()
+            expr = Logical(expr, operator, right)
+        return expr
+
     def expression(self):
         return self.assignment()
 
     def assignment(self):
-        expr: Expr = self.equality()
+        expr: Expr = self.or_()
 
         if self.match(
             [
