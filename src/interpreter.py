@@ -1,12 +1,12 @@
 from numbers import Number
 from typing import Any
-from src.environment import Environment
 
+from src.environment import Environment
 from src.exceptions import JaqlRuntimeError
 from src.token import Token
 from src.token_type import TokenType
 from src.types import Stmt
-from src.types.Expr import Binary, Expr, Grouping, Literal, Unary, Variable
+from src.types.Expr import Assign, Binary, Expr, Grouping, Literal, Unary, Variable
 from src.types.Stmt import Expression, Print, Stmt, Var
 
 
@@ -78,13 +78,18 @@ class Interpreter:
         value = self.evaluate(stmt.expression)
         print(self.stringify(value))
         return None
-    
+
     def visitVarStmt(self, stmt: Var):
         value = None
         if stmt.initialiser is not None:
             value = self.evaluate(stmt.initialiser)
         self.environment.define(name=stmt.name.lexeme, value=value)
         return None
+
+    def visitAssignExpr(self, expr: Assign):
+        value = self.evaluate(expr.value)
+        self.environment.assign(expr.name, value)
+        return value
 
     def visitVariableExpr(self, expr: Variable):
         return self.environment.get(expr.name)

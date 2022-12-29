@@ -1,5 +1,6 @@
 from src.token import Token
 
+
 class JaqlException(Exception):
     pass
 

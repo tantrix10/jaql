@@ -1,14 +1,16 @@
 from typing import Optional
+
 from src.ast_printer import ASTPrinter
 from src.exceptions import JaqlException, JaqlParseException
+from src.jaql import Jaql
 from src.token import Token
 from src.token_type import TokenType
-from src.types.Expr import Binary, Expr, Grouping, Literal, Unary, Variable
+from src.types.Expr import Assign, Binary, Expr, Grouping, Literal, Unary, Variable
 from src.types.Stmt import Expression, Print, Var
 
 
 class Parser:
-    def __init__(self, tokens: list[Token], jaql, debug=False) -> None:
+    def __init__(self, tokens: list[Token], jaql: Jaql, debug=False) -> None:
         self.tokens = tokens
         self.jaql = jaql
         self.debug = debug
@@ -27,21 +29,29 @@ class Parser:
 
     def declaration(self):
         try:
-            if self.match([TokenType.VAR,]):
+            if self.match(
+                [
+                    TokenType.VAR,
+                ]
+            ):
                 return self.var_declaration()
             return self.statement()
         except JaqlParseException:
             self.syncronise()
             return None
-    
+
     def var_declaration(self):
-        name: Token = self.consume(TokenType.IDENTIFIER, "Expect variable name.") #type: ignore
+        name: Token = self.consume(TokenType.IDENTIFIER, "Expect variable name.")  # type: ignore
         initialiser: Optional[Expr] = None
 
-        if self.match([TokenType.EQUAL]):
+        if self.match(
+            [
+                TokenType.EQUAL,
+            ]
+        ):
             initialiser = self.expression()
         self.consume(TokenType.SEMICOLON, "Except ';' after variable declaration")
-        return Var(name, initialiser) #type: ignore
+        return Var(name, initialiser)  # type: ignore
 
     def parse(self):
         # try:
@@ -123,7 +133,7 @@ class Parser:
     def consume(self, type: TokenType, message: str):
         if self.check(type):
             return self.advance()
-        self.jaql.add_error("", message)
+        self.jaql.add_error(-1, message)
 
     def primary(self):
         if self.match(
@@ -146,7 +156,11 @@ class Parser:
             return Literal(None)
         elif self.match([TokenType.NUMBER, TokenType.STRING]):
             return Literal(self.previous().literal)
-        elif self.match([TokenType.IDENTIFIER,]):
+        elif self.match(
+            [
+                TokenType.IDENTIFIER,
+            ]
+        ):
             return Variable(self.previous())
         elif self.match(
             [
@@ -200,11 +214,30 @@ class Parser:
 
     def equality(self):
         expr = self.comparison()
-        while self.match([TokenType.BANG_EQUAL, TokenType.EQUAL]):
+        while self.match([TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL]):
             operator: Token = self.previous()
             right: Expr = self.comparison()
             expr = Binary(expr, operator, right)
         return expr
 
     def expression(self):
-        return self.equality()
+        return self.assignment()
+
+    def assignment(self):
+        expr: Expr = self.equality()
+
+        if self.match(
+            [
+                TokenType.EQUAL,
+            ]
+        ):
+            equals: Token = self.previous()
+            value: Expr = self.assignment()
+
+            if isinstance(expr, Variable):
+                name: Token = expr.name
+                return Assign(name, value)
+
+            self.jaql.add_error(equals.line, "Invalid assignment")
+
+        return expr

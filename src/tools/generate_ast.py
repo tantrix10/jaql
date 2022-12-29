@@ -53,6 +53,7 @@ def main():
         output_dir,
         "Expr",
         [
+            "Assign   :: name: Token, value: Expr",
             "Binary   :: left: Expr, operator: Token, right: Expr",
             "Grouping :: expression: Expr",
             "Literal  :: value: Any",
