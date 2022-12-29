@@ -1,8 +1,10 @@
+from typing import Optional
 from src.ast_printer import ASTPrinter
 from src.exceptions import JaqlException, JaqlParseException
 from src.token import Token
 from src.token_type import TokenType
-from src.types.Expr import Binary, Expr, Grouping, Literal, Unary
+from src.types.Expr import Binary, Expr, Grouping, Literal, Unary, Variable
+from src.types.Stmt import Expression, Print, Var
 
 
 class Parser:
@@ -23,6 +25,24 @@ class Parser:
             return self.print_statement()
         return self.expression_statement()
 
+    def declaration(self):
+        try:
+            if self.match([TokenType.VAR,]):
+                return self.var_declaration()
+            return self.statement()
+        except JaqlParseException:
+            self.syncronise()
+            return None
+    
+    def var_declaration(self):
+        name: Token = self.consume(TokenType.IDENTIFIER, "Expect variable name.") #type: ignore
+        initialiser: Optional[Expr] = None
+
+        if self.match([TokenType.EQUAL]):
+            initialiser = self.expression()
+        self.consume(TokenType.SEMICOLON, "Except ';' after variable declaration")
+        return Var(name, initialiser) #type: ignore
+
     def parse(self):
         # try:
         #     exprs = self.expression()
@@ -34,7 +54,7 @@ class Parser:
         #     return None
         statements = []
         while not self.is_at_end():
-            statements.append(self.statement())
+            statements.append(self.declaration())
         return statements
 
     def error(self, token: Token, message: str):
@@ -63,6 +83,16 @@ class Parser:
                 case TokenType.RETURN:
                     return
             self.advance()
+
+    def print_statement(self):
+        value: Expr = self.expression()
+        self.consume(TokenType.SEMICOLON, "Expect ';' after value.")
+        return Print(value)
+
+    def expression_statement(self):
+        expr: Expr = self.expression()
+        self.consume(TokenType.SEMICOLON, "Expect ';' after value.")
+        return Expression(expr)
 
     def previous(self):
         return self.tokens[self.current - 1]
@@ -116,6 +146,8 @@ class Parser:
             return Literal(None)
         elif self.match([TokenType.NUMBER, TokenType.STRING]):
             return Literal(self.previous().literal)
+        elif self.match([TokenType.IDENTIFIER,]):
+            return Variable(self.previous())
         elif self.match(
             [
                 TokenType.LEFT_PAREN,

@@ -57,12 +57,17 @@ def main():
             "Grouping :: expression: Expr",
             "Literal  :: value: Any",
             "Unary    :: operator: Token, right: Expr",
+            "Variable :: name: Token",
         ],
     )
     define_ast(
         output_dir,
         "Stmt",
-        ["Expression :: expression: Expr", "Print      :: expression: Expr"],
+        [
+            "Expression :: expression: Expr",
+            "Print      :: expression: Expr",
+            "Var        :: name: Token, initialiser: Expr",
+        ],
     )
 
 

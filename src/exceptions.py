@@ -1,3 +1,5 @@
+from src.token import Token
+
 class JaqlException(Exception):
     pass
 
@@ -7,7 +9,7 @@ class JaqlParseException(Exception):
 
 
 class JaqlRuntimeError(Exception):
-    def __init__(self, operator, message):
+    def __init__(self, operator: Token, message: str):
         self.operator = operator
         self.message = message
 

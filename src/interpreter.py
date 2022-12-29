@@ -1,22 +1,29 @@
 from numbers import Number
 from typing import Any
+from src.environment import Environment
 
 from src.exceptions import JaqlRuntimeError
 from src.token import Token
 from src.token_type import TokenType
-from src.types.Expr import Binary, Expr, Grouping, Literal, Unary
+from src.types import Stmt
+from src.types.Expr import Binary, Expr, Grouping, Literal, Unary, Variable
+from src.types.Stmt import Expression, Print, Stmt, Var
 
 
 class Interpreter:
     def __init__(self, jaql):
         self.jaql = jaql
+        self.environment = Environment(jaql)
 
-    def interpret(self, expression: Expr):
+    def interpret(self, statements: list[Stmt]):
         try:
-            value = self.evaluate(expression)
-            print(self.stringify(value))
+            for statement in statements:
+                self.execute(statement)
         except JaqlRuntimeError as e:
             self.jaql.add_runtime_error(e)
+
+    def execute(self, stmt: Stmt):
+        stmt.accept(self)
 
     def stringify(self, value):
         if value is None:
@@ -62,6 +69,25 @@ class Interpreter:
         raise JaqlRuntimeError(
             operator, f"Operand {operand} for operator {operator} must be a number."
         )
+
+    def visitExpressionStmt(self, stmt: Expression):
+        self.evaluate(stmt.expression)
+        return None
+
+    def visitPrintStmt(self, stmt: Print):
+        value = self.evaluate(stmt.expression)
+        print(self.stringify(value))
+        return None
+    
+    def visitVarStmt(self, stmt: Var):
+        value = None
+        if stmt.initialiser is not None:
+            value = self.evaluate(stmt.initialiser)
+        self.environment.define(name=stmt.name.lexeme, value=value)
+        return None
+
+    def visitVariableExpr(self, expr: Variable):
+        return self.environment.get(expr.name)
 
     def visitLiteralExpr(self, expr: Literal):
         return expr.value

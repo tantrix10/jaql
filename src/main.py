@@ -15,11 +15,11 @@ def run(code: str):
     jaql.check_errors()
 
     parser = Parser(tokens, jaql=jaql, debug=True)
-    expression = parser.parse()
+    statements = parser.parse()
     jaql.check_errors()
 
     interpreter = Interpreter(jaql=jaql)
-    interpreter.interpret(expression)  # type: ignore
+    interpreter.interpret(statements)  # type: ignore
     jaql.check_errors()
 
 
