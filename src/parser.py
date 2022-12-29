@@ -8,6 +8,7 @@ from src.token_type import TokenType
 from src.types.Expr import (
     Assign,
     Binary,
+    Call,
     Expr,
     Grouping,
     Literal,
@@ -28,7 +29,11 @@ class Parser:
         self.has_error = False
 
     def statement(self):
-        if self.match([TokenType.FOR,]):
+        if self.match(
+            [
+                TokenType.FOR,
+            ]
+        ):
             return self.for_statement()
         if self.match(
             [
@@ -119,19 +124,27 @@ class Parser:
 
         self.consume(TokenType.RIGHT_BRACE, "Expect '}' after block.")
         return statements
-    
+
     def for_statement(self):
         self.consume(TokenType.LEFT_PAREN, "Expect '(' after for.")
 
         initialiser: Optional[Stmt]
 
-        if self.match([TokenType.SEMICOLON,]):
+        if self.match(
+            [
+                TokenType.SEMICOLON,
+            ]
+        ):
             initialiser = None
-        elif self.match([TokenType.VAR,]):
+        elif self.match(
+            [
+                TokenType.VAR,
+            ]
+        ):
             initialiser = self.var_declaration()
         else:
             initialiser = self.expression_statement()
-        
+
         condition: Optional[Expr] = None
 
         if not self.check(TokenType.SEMICOLON):
@@ -148,10 +161,10 @@ class Parser:
 
         if increment is not None:
             body = Block([body, Expression(increment)])
-        
+
         if condition is None:
             condition = Literal(True)
-        
+
         body = While(condition, body)
 
         if initialiser is not None:
@@ -159,7 +172,6 @@ class Parser:
 
         return body
 
-    
     def while_statement(self):
         self.consume(TokenType.LEFT_PAREN, "Expect '(' after while.")
         condition: Expr = self.expression()
@@ -268,7 +280,33 @@ class Parser:
             operator: Token = self.previous()
             right: Expr = self.unary()
             return Unary(operator, right)
-        return self.primary()
+        return self.call()
+    
+    def call(self):
+        expr: Expr = self.primary()
+
+        while True:
+            if self.match([TokenType.LEFT_PAREN,]):
+                expr = self.finish_call(expr)
+            else:
+                break
+        
+        return expr
+    
+    def finish_call(self, callee: Expr):
+        arguments: list[Expr] = []
+
+        if not self.check(TokenType.RIGHT_PAREN):
+            while True:
+                if len(arguments) >= self.jaql.max_arugments:
+                    self.jaql.add_error(self.peek().line, f"Can't have more than {self.jaql.max_arugments} arguments")
+                arguments.append(self.expression())
+                if not self.match([TokenType.COMMA]):
+                    break
+        
+        paren: Token = self.consume(TokenType.RIGHT_PAREN, "Expect ')' after arguments") # type: ignore
+
+        return Call(callee, paren, arguments)
 
     def factor(self):
         expr = self.unary()

@@ -9,6 +9,7 @@ from src.types import Stmt
 from src.types.Expr import (
     Assign,
     Binary,
+    Call,
     Expr,
     Grouping,
     Literal,
@@ -116,7 +117,7 @@ class Interpreter:
             stmt.statements, Environment(jaql=self.jaql, enclosing=self.environment)
         )
         return None
-    
+
     def visitWhileStmt(self, stmt: While):
         while self.is_truthy(self.evaluate(stmt.condition)):
             self.execute(stmt.body)
@@ -203,3 +204,16 @@ class Interpreter:
                 return self.is_equal(left, right)
 
         return None
+
+    def visitCallExpr(self, expr: Call):
+        callee = self.evaluate(expr.callee)
+
+        arguments = []
+
+        for argument in expr.arguments:
+            arguments.append(self.evaluate(argument))
+
+        if not isinstance(callee, LoxCallable):
+            self.jaql.add_runtime_error(JaqlRuntimeError(expr.paren, f"Cannot call {callee}"))
+
+        return callee.call(self, arguments)

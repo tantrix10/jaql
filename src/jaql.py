@@ -8,6 +8,7 @@ class Jaql:
         self.code: str = code
         self.error: bool = False
         self.runtime_error: bool = False
+        self.max_arugments = 256
 
     def report(self, line: int, where: str, message: str):
         print(f"[[ {line}, char: {where} ]] Error: {message}")
