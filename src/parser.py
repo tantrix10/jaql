@@ -16,7 +16,17 @@ from src.types.Expr import (
     Unary,
     Variable,
 )
-from src.types.Stmt import Block, Expression, If, Print, Stmt, Var, While
+from src.types.Stmt import (
+    Block,
+    Expression,
+    Function,
+    If,
+    Print,
+    Return,
+    Stmt,
+    Var,
+    While,
+)
 
 
 class Parser:
@@ -47,6 +57,8 @@ class Parser:
             ]
         ):
             return self.print_statement()
+        if self.match([TokenType.RETURN]):
+            return self.return_statement()
         if self.match([TokenType.WHILE]):
             return self.while_statement()
         if self.match(
@@ -61,6 +73,12 @@ class Parser:
         try:
             if self.match(
                 [
+                    TokenType.FUN,
+                ]
+            ):
+                return self.function("function")
+            if self.match(
+                [
                     TokenType.VAR,
                 ]
             ):
@@ -69,6 +87,37 @@ class Parser:
         except JaqlParseException:
             self.syncronise()
             return None
+
+    def return_statement(self):
+        keyword: Token = self.previous()
+        value: Optional[Expr] = None
+
+        if not self.check(TokenType.SEMICOLON):
+            value = self.expression()
+
+        self.consume(TokenType.SEMICOLON, "Expect ';' after return value.")
+
+        return Return(keyword, value)
+
+    def function(self, kind: str):
+        name: Token = self.consume(TokenType.IDENTIFIER, f"Expcted {kind} name.")  # type: ignore
+        self.consume(TokenType.LEFT_PAREN, f"expect '(' after {kind} name")
+
+        parameters: list[Token] = []
+        if not self.check(TokenType.RIGHT_PAREN):
+            while True:
+                if len(parameters) > self.jaql.max_arugments:
+                    self.error(
+                        self.peek(),
+                        f"Can't have more than {self.jaql.max_arugments} arguments",
+                    )
+                parameters.append(self.consume(TokenType.IDENTIFIER, "Expect parameter name"))  # type: ignore
+                if not self.match([TokenType.COMMA]):
+                    break
+        self.consume(TokenType.RIGHT_PAREN, "Expect ')' after parameters.")
+        self.consume(TokenType.LEFT_BRACE, "Expect '{' before " + kind + " body.")
+        body = self.block()
+        return Function(name, parameters, body)
 
     def var_declaration(self):
         name: Token = self.consume(TokenType.IDENTIFIER, "Expect variable name.")  # type: ignore
@@ -199,12 +248,12 @@ class Parser:
 
     def print_statement(self):
         value: Expr = self.expression()
-        self.consume(TokenType.SEMICOLON, "Expect ';' after value.")
+        self.consume(TokenType.SEMICOLON, "Expect ';' after print value.")
         return Print(value)
 
     def expression_statement(self):
         expr: Expr = self.expression()
-        self.consume(TokenType.SEMICOLON, "Expect ';' after value.")
+        self.consume(TokenType.SEMICOLON, "Expect ';' after expression value.")
         return Expression(expr)
 
     def previous(self):
@@ -236,7 +285,7 @@ class Parser:
     def consume(self, type: TokenType, message: str):
         if self.check(type):
             return self.advance()
-        self.jaql.add_error(-1, message)
+        self.jaql.add_error(self.peek().line, message)
 
     def primary(self):
         if self.match(
@@ -281,30 +330,37 @@ class Parser:
             right: Expr = self.unary()
             return Unary(operator, right)
         return self.call()
-    
+
     def call(self):
         expr: Expr = self.primary()
 
         while True:
-            if self.match([TokenType.LEFT_PAREN,]):
+            if self.match(
+                [
+                    TokenType.LEFT_PAREN,
+                ]
+            ):
                 expr = self.finish_call(expr)
             else:
                 break
-        
+
         return expr
-    
+
     def finish_call(self, callee: Expr):
         arguments: list[Expr] = []
 
         if not self.check(TokenType.RIGHT_PAREN):
             while True:
                 if len(arguments) >= self.jaql.max_arugments:
-                    self.jaql.add_error(self.peek().line, f"Can't have more than {self.jaql.max_arugments} arguments")
+                    self.jaql.add_error(
+                        self.peek().line,
+                        f"Can't have more than {self.jaql.max_arugments} arguments",
+                    )
                 arguments.append(self.expression())
                 if not self.match([TokenType.COMMA]):
                     break
-        
-        paren: Token = self.consume(TokenType.RIGHT_PAREN, "Expect ')' after arguments") # type: ignore
+
+        paren: Token = self.consume(TokenType.RIGHT_PAREN, "Expect ')' after arguments")  # type: ignore
 
         return Call(callee, paren, arguments)
 

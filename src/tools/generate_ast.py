@@ -69,8 +69,10 @@ def main():
         [
             "Block      :: statements: list[Stmt]",
             "Expression :: expression: Expr",
+            "Function   :: name: Token, params: list[Token], body: list[Stmt]",
             "If         :: condition: Expr, then_branch: Stmt, else_branch: Optional[Stmt]",
             "Print      :: expression: Expr",
+            "Return     :: keyword: Token, value: Optional[Expr]",
             "Var        :: name: Token, initialiser: Expr",
             "While      :: condition: Expr, body: Stmt",
         ],

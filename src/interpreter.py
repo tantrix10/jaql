@@ -1,8 +1,10 @@
 from numbers import Number
-from typing import Any
+from typing import Any, Optional
 
+from src.callable import JaqlFunction, LoxCallable
 from src.environment import Environment
-from src.exceptions import JaqlRuntimeError
+from src.exceptions import JaqlRuntimeError, ReturnException
+from src.natives import Clock
 from src.token import Token
 from src.token_type import TokenType
 from src.types import Stmt
@@ -17,13 +19,20 @@ from src.types.Expr import (
     Unary,
     Variable,
 )
-from src.types.Stmt import Block, Expression, If, Print, Stmt, Var, While
+from src.types.Stmt import Block, Expression, Function, If, Print, Return, Stmt, Var, While
 
 
 class Interpreter:
+
+    globals = Environment()
+    globals.define("clock", Clock())
+
+
     def __init__(self, jaql):
         self.jaql = jaql
-        self.environment = Environment(jaql)
+
+        self.environment = self.globals
+
 
     def interpret(self, statements: list[Stmt]):
         try:
@@ -39,7 +48,7 @@ class Interpreter:
         if value is None:
             return "nill"
         if isinstance(value, Number):
-            text = str(value)
+            text = str(value)  # type: ignore
             if text.endswith(".0"):
                 text = text[0:-2]
             return text
@@ -84,10 +93,16 @@ class Interpreter:
         previous = self.environment
         self.environment = environment
 
-        for statement in statements:
-            self.execute(statement)
+        try:
+            for statement in statements:
+                self.execute(statement)
+        finally:
+            self.environment = previous
 
-        self.environment = previous
+    def visitFunctionStmt(self, stmt: Function):
+        function = JaqlFunction(declaration=stmt, closure=self.environment)
+        self.environment.define(stmt.name.lexeme, function)
+        return None
 
     def visitIfStmt(self, stmt: If):
         if self.is_truthy(self.evaluate(stmt.condition)):
@@ -112,10 +127,14 @@ class Interpreter:
         self.environment.define(name=stmt.name.lexeme, value=value)
         return None
 
+    def visitReturnStmt(self, stmt: Return):
+        value = None
+        if stmt.value is not None:
+            value = self.evaluate(stmt.value)
+        raise ReturnException(value)
+
     def visitBlockStmt(self, stmt: Block):
-        self.execute_block(
-            stmt.statements, Environment(jaql=self.jaql, enclosing=self.environment)
-        )
+        self.execute_block(stmt.statements, Environment(enclosing=self.environment))
         return None
 
     def visitWhileStmt(self, stmt: While):
@@ -206,7 +225,7 @@ class Interpreter:
         return None
 
     def visitCallExpr(self, expr: Call):
-        callee = self.evaluate(expr.callee)
+        callee: LoxCallable = self.evaluate(expr.callee)  # type: ignore
 
         arguments = []
 
@@ -214,6 +233,11 @@ class Interpreter:
             arguments.append(self.evaluate(argument))
 
         if not isinstance(callee, LoxCallable):
-            self.jaql.add_runtime_error(JaqlRuntimeError(expr.paren, f"Cannot call {callee}"))
+            raise JaqlRuntimeError(expr.paren, f"Cannot call {callee}")
+
+        if len(arguments) != callee.arity():
+            raise JaqlRuntimeError(
+                expr.paren, f"Expected {callee.arity()} arguments, got {len(arguments)}"
+            )
 
         return callee.call(self, arguments)

@@ -18,3 +18,7 @@ class JaqlRuntimeError(Exception):
         return f"{self.message} on line: [{self.operator.line}]"
 
     pass
+
+class ReturnException(JaqlException):
+    def __init__(self, value) -> None:
+        self.value = value
