@@ -4,6 +4,7 @@ from os.path import isfile
 from src.interpreter import Interpreter
 from src.jaql import Jaql
 from src.parser import Parser
+from src.resolver import Resolver
 from src.scanner import Scanner
 
 
@@ -19,6 +20,11 @@ def run(code: str):
     jaql.check_errors()
 
     interpreter = Interpreter(jaql=jaql)
+    resolver = Resolver(interpreter=interpreter, jaql=jaql)
+
+    resolver.resolve(statements=statements)
+    jaql.check_errors()
+
     interpreter.interpret(statements)  # type: ignore
     jaql.check_errors()
 

@@ -21,6 +21,15 @@ class Environment:
 
         raise JaqlRuntimeError(name, f"Undefined variable {name.lexeme}.")
 
+    def get_at(self, distance: int, name: str):
+        return self.ancestor(distance)._final.get(name)
+
+    def ancestor(self, distance: int):
+        environment = self
+        for _ in range(distance):
+            environment = environment.enclosing
+        return environment
+
     def assign(self, name: Token, value: Any):
         if name.lexeme in self._final:
             self._final[name.lexeme] = value
@@ -29,3 +38,6 @@ class Environment:
             self.enclosing.assign(name, value)
             return None
         raise JaqlRuntimeError(name, f"Undefined variable {name.lexeme}.")
+    
+    def assign_at(self, distance: int, name: Token, value):
+        self.ancestor(distance)._final[name.lexeme] = value

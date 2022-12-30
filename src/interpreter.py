@@ -19,20 +19,29 @@ from src.types.Expr import (
     Unary,
     Variable,
 )
-from src.types.Stmt import Block, Expression, Function, If, Print, Return, Stmt, Var, While
+from src.types.Stmt import (
+    Block,
+    Expression,
+    Function,
+    If,
+    Print,
+    Return,
+    Stmt,
+    Var,
+    While,
+)
 
 
 class Interpreter:
 
     globals = Environment()
     globals.define("clock", Clock())
-
+    locals: dict[Expr, int] = {}
 
     def __init__(self, jaql):
         self.jaql = jaql
 
         self.environment = self.globals
-
 
     def interpret(self, statements: list[Stmt]):
         try:
@@ -56,6 +65,9 @@ class Interpreter:
 
     def evaluate(self, expr: Expr):
         return expr.accept(self)
+
+    def resolve(self, expr: Expr, depth: int):
+        self.locals[expr] = depth
 
     def is_truthy(self, obj: Any):
         if obj is None:
@@ -98,6 +110,14 @@ class Interpreter:
                 self.execute(statement)
         finally:
             self.environment = previous
+
+    def look_up_variable(self, name: Token, expr: Expr):
+        distance = self.locals.get(expr)
+
+        if distance is not None:
+            return self.environment.get_at(distance, name.lexeme)
+        else:
+            return self.globals.get(name)
 
     def visitFunctionStmt(self, stmt: Function):
         function = JaqlFunction(declaration=stmt, closure=self.environment)
@@ -144,11 +164,16 @@ class Interpreter:
 
     def visitAssignExpr(self, expr: Assign):
         value = self.evaluate(expr.value)
-        self.environment.assign(expr.name, value)
+
+        distance = self.locals.get(expr)
+        if distance is not None:
+            self.environment.assign_at(distance, expr.name, value)
+        else:
+            self.globals.assign(expr.name, value)
         return value
 
     def visitVariableExpr(self, expr: Variable):
-        return self.environment.get(expr.name)
+        return self.look_up_variable(expr.name, expr)
 
     def visitLiteralExpr(self, expr: Literal):
         return expr.value

@@ -19,6 +19,7 @@ class JaqlRuntimeError(Exception):
 
     pass
 
+
 class ReturnException(JaqlException):
     def __init__(self, value) -> None:
         self.value = value
