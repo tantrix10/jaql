@@ -38,6 +38,6 @@ class Environment:
             self.enclosing.assign(name, value)
             return None
         raise JaqlRuntimeError(name, f"Undefined variable {name.lexeme}.")
-    
+
     def assign_at(self, distance: int, name: Token, value):
         self.ancestor(distance)._final[name.lexeme] = value

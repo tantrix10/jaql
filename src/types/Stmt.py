@@ -40,6 +40,15 @@ class Function(Stmt):
         return visitor.visitFunctionStmt(self)
 
 
+class Class(Stmt):
+    def __init__(self, name: Token, methods: list[Function]):
+        self.name = name
+        self.methods = methods
+
+    def accept(self, visitor):
+        return visitor.visitClassStmt(self)
+
+
 class If(Stmt):
     def __init__(self, condition: Expr, then_branch: Stmt, else_branch: Optional[Stmt]):
         self.condition = condition

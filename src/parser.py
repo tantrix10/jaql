@@ -18,6 +18,7 @@ from src.types.Expr import (
 )
 from src.types.Stmt import (
     Block,
+    Class,
     Expression,
     Function,
     If,
@@ -71,6 +72,8 @@ class Parser:
 
     def declaration(self):
         try:
+            if self.match([TokenType.CLASS,]):
+                return self.class_declaration()
             if self.match(
                 [
                     TokenType.FUN,
@@ -98,6 +101,19 @@ class Parser:
         self.consume(TokenType.SEMICOLON, "Expect ';' after return value.")
 
         return Return(keyword, value)
+    
+    def class_declaration(self):
+        name: Token = self.consume(TokenType.IDENTIFIER, "Expect class name.")  # type: ignore
+        self.consume(TokenType.LEFT_BRACE, "Expected '{' before class body.")
+
+        methods: list[Function] = []
+
+        while not self.check(TokenType.RIGHT_BRACE) and not self.is_at_end():
+            methods.append(self.function("method"))
+        
+        self.consume(TokenType.RIGHT_BRACE, "Expect '}' after class body.")
+
+        return Class(name, methods)
 
     def function(self, kind: str):
         name: Token = self.consume(TokenType.IDENTIFIER, f"Expcted {kind} name.")  # type: ignore

@@ -32,3 +32,26 @@ class JaqlFunction(LoxCallable):
 
     def __str__(self) -> str:
         return f"<fn {self.declaration.name.lexeme}>"
+
+
+class JaqlClass(LoxCallable):
+    def __init__(self, name) -> None:
+        self.name = name
+    
+    def __str__(self) -> str:
+        return self.name
+    
+    def call(self, interpreter, arguments):
+        instance = JaqlInstance(self)
+        return instance
+    
+    def arity(self) -> int:
+        return 0
+
+
+class JaqlInstance:
+    def __init__(self, klass) -> None:
+        self.klass = klass
+    
+    def __str__(self) -> str:
+        return self.klass.name + " instance"

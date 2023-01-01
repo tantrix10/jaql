@@ -3,7 +3,8 @@ from enum import Enum, auto
 
 class FunctionType(Enum):
     NONE = auto()
-    FUNCTION = auto() 
+    FUNCTION = auto()
+
 
 class TokenType(Enum):
     # Single-character tokens.

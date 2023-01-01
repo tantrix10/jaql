@@ -1,6 +1,7 @@
 from typing import Union
 
 from src.token import Token
+from src.token_type import FunctionType
 from src.types.Expr import (
     Assign,
     Binary,
@@ -14,6 +15,7 @@ from src.types.Expr import (
 )
 from src.types.Stmt import (
     Block,
+    Class,
     Expression,
     Function,
     If,
@@ -23,7 +25,6 @@ from src.types.Stmt import (
     Var,
     While,
 )
-from src.token_type import FunctionType
 
 
 class Resolver:
@@ -114,6 +115,11 @@ class Resolver:
         if stmt.value is not None:
             self.resolve_single(stmt.value)
         return None
+    
+    def visitClassStmt(self, stmt: Class):
+        self.declare(stmt.name)
+        self.define(stmt.name)
+        return None
 
     def visitWhileStmt(self, stmt: While):
         self.resolve_single(stmt.condition)
@@ -165,7 +171,9 @@ class Resolver:
         return None
 
     def visitVariableExpr(self, expr: Variable):
-        if (not self.scopes_empty()) and (self.scopes[-1].get(expr.name.lexeme) == False):
+        if (not self.scopes_empty()) and (
+            self.scopes[-1].get(expr.name.lexeme) == False
+        ):
             self.interpreter.jaql.add_error(
                 expr.name, "Can't read local variable in its own initialiser"
             )

@@ -1,7 +1,7 @@
 from numbers import Number
 from typing import Any, Optional
 
-from src.callable import JaqlFunction, LoxCallable
+from src.callable import JaqlClass, JaqlFunction, LoxCallable
 from src.environment import Environment
 from src.exceptions import JaqlRuntimeError, ReturnException
 from src.natives import Clock
@@ -21,6 +21,7 @@ from src.types.Expr import (
 )
 from src.types.Stmt import (
     Block,
+    Class,
     Expression,
     Function,
     If,
@@ -145,6 +146,12 @@ class Interpreter:
         if stmt.initialiser is not None:
             value = self.evaluate(stmt.initialiser)
         self.environment.define(name=stmt.name.lexeme, value=value)
+        return None
+    
+    def visitClassStmt(self, stmt: Class):
+        self.environment.define(stmt.name.lexeme, None)
+        klass = JaqlClass(stmt.name.lexeme)
+        self.environment.assign(stmt.name, klass)
         return None
 
     def visitReturnStmt(self, stmt: Return):
