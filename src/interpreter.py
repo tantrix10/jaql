@@ -199,17 +199,21 @@ class Interpreter:
 
         klass = JaqlClass(stmt.name.lexeme, superclass, methods)
         if superclass is not None:
-            self.environment: Environment = self.environment.enclosing # type: ignore
-        self.environment.assign(stmt.name, klass) # type: ignore
+            self.environment: Environment = self.environment.enclosing  # type: ignore
+        self.environment.assign(stmt.name, klass)  # type: ignore
         return None
-    
+
     def visitSuperExpr(self, expr: Super):
         distance = self.locals.get(expr)
-        superclass: JaqlClass = self.environment.get_at(distance, "super") # type: ignore
-        object: JaqlInstance = self.environment.get_at(distance-1, "this") # type: ignore
-        method: JaqlFunction = superclass.find_method(expr.method.lexeme) # type: ignore
+        superclass: JaqlClass = self.environment.get_at(distance, "super")  # type: ignore
+        object: JaqlInstance = self.environment.get_at(distance - 1, "this")  # type: ignore
+        method: JaqlFunction = superclass.find_method(expr.method.lexeme)  # type: ignore
         if method is None:
-            self.jaql.add_runtime_error(JaqlRuntimeError(expr.method, f"Undefined property {expr.method.lexeme}."))
+            self.jaql.add_runtime_error(
+                JaqlRuntimeError(
+                    expr.method, f"Undefined property {expr.method.lexeme}."
+                )
+            )
         return method.bind(object)
 
     def visitThisExpr(self, expr: This):

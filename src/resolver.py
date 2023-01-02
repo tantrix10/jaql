@@ -143,7 +143,7 @@ class Resolver:
         if stmt.superclass is not None:
             self.current_class = ClassType.SUBCLASS
             self.resolve_single(stmt.superclass)
-        
+
         if stmt.superclass is not None:
             self.start_scope()
             self.scopes[-1]["super"] = True
@@ -162,12 +162,14 @@ class Resolver:
             self.end_scope()
         self.current_class = encolsing_class
         return None
-    
+
     def visitSuperExpr(self, expr: Super):
         if self.current_class == ClassType.NONE:
             self.jaql.add_error(expr.keyword, "Can't use 'super' outside of a class.")
         elif self.current_class != ClassType.SUBCLASS:
-            self.jaql.add_error(expr.keyword, "Can't use 'super' in a class without superclass.")
+            self.jaql.add_error(
+                expr.keyword, "Can't use 'super' in a class without superclass."
+            )
         self.resolve_local(expr, expr.keyword)
         return None
 
