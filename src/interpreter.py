@@ -1,7 +1,7 @@
 from numbers import Number
 from typing import Any, Optional
 
-from src.callable import JaqlClass, JaqlFunction, LoxCallable
+from src.callable import JaqlClass, JaqlFunction, JaqlInstance, LoxCallable
 from src.environment import Environment
 from src.exceptions import JaqlRuntimeError, ReturnException
 from src.natives import Clock
@@ -13,9 +13,11 @@ from src.types.Expr import (
     Binary,
     Call,
     Expr,
+    Get,
     Grouping,
     Literal,
     Logical,
+    Set,
     Unary,
     Variable,
 )
@@ -147,7 +149,23 @@ class Interpreter:
             value = self.evaluate(stmt.initialiser)
         self.environment.define(name=stmt.name.lexeme, value=value)
         return None
-    
+
+    def visitGetExpr(self, expr: Get):
+        obj = self.evaluate(expr.obj)
+
+        if isinstance(obj, JaqlInstance):
+            return obj.get(expr.name)
+        self.jaql.add_error(expr.name.line, "Only instances have properties.")
+
+    def visitSetExpr(self, expr: Set):
+        obj = self.evaluate(expr.obj)
+        if not isinstance(obj, JaqlInstance):
+            self.jaql.add_error(expr.name.line, "Only instances have properties.")
+
+        value = self.evaluate(expr.value)
+        obj.set(expr.name, value)
+        return value
+
     def visitClassStmt(self, stmt: Class):
         self.environment.define(stmt.name.lexeme, None)
         klass = JaqlClass(stmt.name.lexeme)

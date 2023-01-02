@@ -1,7 +1,8 @@
 from typing import Any
 
 from src.environment import Environment
-from src.exceptions import ReturnException
+from src.exceptions import JaqlRuntimeError, ReturnException
+from src.token import Token
 
 
 class LoxCallable:
@@ -37,14 +38,14 @@ class JaqlFunction(LoxCallable):
 class JaqlClass(LoxCallable):
     def __init__(self, name) -> None:
         self.name = name
-    
+
     def __str__(self) -> str:
         return self.name
-    
+
     def call(self, interpreter, arguments):
         instance = JaqlInstance(self)
         return instance
-    
+
     def arity(self) -> int:
         return 0
 
@@ -52,6 +53,16 @@ class JaqlClass(LoxCallable):
 class JaqlInstance:
     def __init__(self, klass) -> None:
         self.klass = klass
-    
+        self.fields = {}
+
+    def get(self, name: Token):
+        if name.lexeme in self.fields:
+            return self.fields.get(name.lexeme)
+
+        raise JaqlRuntimeError(name, f"Undefined property {name.lexeme}.")
+
+    def set(self, name: Token, value: Any):
+        self.fields[name.lexeme] = value
+
     def __str__(self) -> str:
         return self.klass.name + " instance"

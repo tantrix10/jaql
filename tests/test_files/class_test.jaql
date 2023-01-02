@@ -9,3 +9,6 @@ print DevonshireCream; // Prints "DevonshireCream".
 class Bagel {}
 var bagel = Bagel();
 print bagel;
+
+bagel.a = "property assignment";
+print bagel.a;

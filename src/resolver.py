@@ -7,9 +7,11 @@ from src.types.Expr import (
     Binary,
     Call,
     Expr,
+    Get,
     Grouping,
     Literal,
     Logical,
+    Set,
     Unary,
     Variable,
 )
@@ -115,10 +117,19 @@ class Resolver:
         if stmt.value is not None:
             self.resolve_single(stmt.value)
         return None
-    
+
     def visitClassStmt(self, stmt: Class):
         self.declare(stmt.name)
         self.define(stmt.name)
+        return None
+
+    def visitGetExpr(self, expr: Get):
+        self.resolve_single(expr.obj)
+        return None
+
+    def visitSetExpr(self, expr: Set):
+        self.resolve_single(expr.value)
+        self.resolve_single(expr.obj)
         return None
 
     def visitWhileStmt(self, stmt: While):

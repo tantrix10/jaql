@@ -11,7 +11,6 @@ def define_type(
     writer.write(f"class {class_name}({base_name}):\n")
     writer.write(f"    def __init__(self, {field_list}):\n")
     for field in field_list.split(","):
-        print(field, field_list)
         name = field.split(":")[0]
         writer.write(f"        self.{name} = {name}\n")
     writer.write("\n")
@@ -56,6 +55,8 @@ def main():
             "Assign   :: name: Token, value: Expr",
             "Binary   :: left: Expr, operator: Token, right: Expr",
             "Call     :: callee: Expr, paren: Token, arguments: list[Expr]",
+            "Get      :: obj: Expr, name: Token",
+            "Set      :: obj: Expr, name: Token, value: Expr",
             "Grouping :: expression: Expr",
             "Literal  :: value: Any",
             "Logical  :: left: Expr, operator: Token, right: Expr",

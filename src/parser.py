@@ -10,9 +10,11 @@ from src.types.Expr import (
     Binary,
     Call,
     Expr,
+    Get,
     Grouping,
     Literal,
     Logical,
+    Set,
     Unary,
     Variable,
 )
@@ -72,7 +74,11 @@ class Parser:
 
     def declaration(self):
         try:
-            if self.match([TokenType.CLASS,]):
+            if self.match(
+                [
+                    TokenType.CLASS,
+                ]
+            ):
                 return self.class_declaration()
             if self.match(
                 [
@@ -101,7 +107,7 @@ class Parser:
         self.consume(TokenType.SEMICOLON, "Expect ';' after return value.")
 
         return Return(keyword, value)
-    
+
     def class_declaration(self):
         name: Token = self.consume(TokenType.IDENTIFIER, "Expect class name.")  # type: ignore
         self.consume(TokenType.LEFT_BRACE, "Expected '{' before class body.")
@@ -110,7 +116,7 @@ class Parser:
 
         while not self.check(TokenType.RIGHT_BRACE) and not self.is_at_end():
             methods.append(self.function("method"))
-        
+
         self.consume(TokenType.RIGHT_BRACE, "Expect '}' after class body.")
 
         return Class(name, methods)
@@ -357,6 +363,13 @@ class Parser:
                 ]
             ):
                 expr = self.finish_call(expr)
+            elif self.match(
+                [
+                    TokenType.DOT,
+                ]
+            ):
+                name: Token = self.consume(TokenType.IDENTIFIER, "Expect property name after '.'.")  # type: ignore
+                expr = Get(expr, name)
             else:
                 break
 
@@ -464,6 +477,9 @@ class Parser:
             if isinstance(expr, Variable):
                 name: Token = expr.name
                 return Assign(name, value)
+            elif isinstance(expr, Get):
+                get: Get = expr
+                return Set(get.obj, get.name, value)
 
             self.jaql.add_error(equals.line, "Invalid assignment")
 
