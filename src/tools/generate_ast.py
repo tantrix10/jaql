@@ -28,7 +28,7 @@ def define_ast(output_dir: str, base_name: str, types: list[str]):
         file.write("from typing import Any, Optional\n")
         file.write("from src.token import Token\n")
         if base_name == "Stmt":
-            file.write("from src.types.Expr import Expr")
+            file.write("from src.types.Expr import Expr, Variable")
         file.write("\n \n")
         file.write(f"class {base_name}(ABC):\n")
         file.write("    pass\n")
@@ -57,6 +57,7 @@ def main():
             "Call     :: callee: Expr, paren: Token, arguments: list[Expr]",
             "Get      :: obj: Expr, name: Token",
             "Set      :: obj: Expr, name: Token, value: Expr",
+            "Super    :: keyword: Token, method: Token",
             "This     :: keyword: Token",
             "Grouping :: expression: Expr",
             "Literal  :: value: Any",
@@ -72,7 +73,7 @@ def main():
             "Block      :: statements: list[Stmt]",
             "Expression :: expression: Expr",
             "Function   :: name: Token, params: list[Token], body: list[Stmt]",
-            "Class      :: name: Token, methods: list[Function]",
+            "Class      :: name: Token, superclass: Optional[Variable], methods: list[Function]",
             "If         :: condition: Expr, then_branch: Stmt, else_branch: Optional[Stmt]",
             "Print      :: expression: Expr",
             "Return     :: keyword: Token, value: Optional[Expr]",

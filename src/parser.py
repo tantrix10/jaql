@@ -15,6 +15,7 @@ from src.types.Expr import (
     Literal,
     Logical,
     Set,
+    Super,
     This,
     Unary,
     Variable,
@@ -111,6 +112,12 @@ class Parser:
 
     def class_declaration(self):
         name: Token = self.consume(TokenType.IDENTIFIER, "Expect class name.")  # type: ignore
+
+        superclass: Optional[Variable] = None
+        if self.match([TokenType.LESS]):
+            self.consume(TokenType.IDENTIFIER, "Expect superclass name.")
+            superclass = Variable(self.previous())
+
         self.consume(TokenType.LEFT_BRACE, "Expected '{' before class body.")
 
         methods: list[Function] = []
@@ -120,7 +127,7 @@ class Parser:
 
         self.consume(TokenType.RIGHT_BRACE, "Expect '}' after class body.")
 
-        return Class(name, methods)
+        return Class(name, superclass, methods)
 
     def function(self, kind: str):
         name: Token = self.consume(TokenType.IDENTIFIER, f"Expcted {kind} name.")  # type: ignore
@@ -317,6 +324,11 @@ class Parser:
             ]
         ):
             return Literal(False)
+        elif self.match([TokenType.SUPER]):
+            keyword: Token = self.previous()
+            self.consume(TokenType.DOT, "Expect '.' after 'super'.")
+            method: Token = self.consume(TokenType.IDENTIFIER, "Expect superclass method name.") # type: ignore
+            return Super(keyword, method)
         elif self.match(
             [
                 TokenType.TRUE,
@@ -329,7 +341,11 @@ class Parser:
             ]
         ):
             return Literal(None)
-        elif self.match([TokenType.THIS,]):
+        elif self.match(
+            [
+                TokenType.THIS,
+            ]
+        ):
             return This(self.previous())
         elif self.match([TokenType.NUMBER, TokenType.STRING]):
             return Literal(self.previous().literal)

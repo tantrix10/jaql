@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Optional
 
 from src.token import Token
-from src.types.Expr import Expr
+from src.types.Expr import Expr, Variable
 
 
 class Stmt(ABC):
@@ -41,8 +41,11 @@ class Function(Stmt):
 
 
 class Class(Stmt):
-    def __init__(self, name: Token, methods: list[Function]):
+    def __init__(
+        self, name: Token, superclass: Optional[Variable], methods: list[Function]
+    ):
         self.name = name
+        self.superclass = superclass
         self.methods = methods
 
     def accept(self, visitor):

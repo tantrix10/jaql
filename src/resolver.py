@@ -12,6 +12,7 @@ from src.types.Expr import (
     Literal,
     Logical,
     Set,
+    Super,
     This,
     Unary,
     Variable,
@@ -118,7 +119,9 @@ class Resolver:
             self.jaql.add_error(stmt.keyword.line, "Can't return from top-level code.")
         if stmt.value is not None:
             if self.current_function == FunctionType.INITIALISER:
-                self.jaql.add_error(stmt.keyword.line, "Can't return a value from an initializer.")
+                self.jaql.add_error(
+                    stmt.keyword.line, "Can't return a value from an initializer."
+                )
             self.resolve_single(stmt.value)
         return None
 
@@ -129,6 +132,22 @@ class Resolver:
         self.declare(stmt.name)
         self.define(stmt.name)
 
+        if (
+            stmt.superclass is not None
+            and stmt.name.lexeme == stmt.superclass.name.lexeme
+        ):
+            self.jaql.add_error(
+                stmt.superclass.name, "A class can't inherit from itself."
+            )
+
+        if stmt.superclass is not None:
+            self.current_class = ClassType.SUBCLASS
+            self.resolve_single(stmt.superclass)
+        
+        if stmt.superclass is not None:
+            self.start_scope()
+            self.scopes[-1]["super"] = True
+
         self.start_scope()
         self.scopes[-1]["this"] = True
 
@@ -137,14 +156,26 @@ class Resolver:
             if method.name.lexeme == "init":
                 declaration = FunctionType.INITIALISER
             self.resolve_function(method, declaration)
-        
+
         self.end_scope()
+        if stmt.superclass is not None:
+            self.end_scope()
         self.current_class = encolsing_class
         return None
     
+    def visitSuperExpr(self, expr: Super):
+        if self.current_class == ClassType.NONE:
+            self.jaql.add_error(expr.keyword, "Can't use 'super' outside of a class.")
+        elif self.current_class != ClassType.SUBCLASS:
+            self.jaql.add_error(expr.keyword, "Can't use 'super' in a class without superclass.")
+        self.resolve_local(expr, expr.keyword)
+        return None
+
     def visitThisExpr(self, expr: This):
         if self.current_class == ClassType.NONE:
-            self.jaql.add_error(expr.keyword.line, "Can't use 'this' outside of a class.")
+            self.jaql.add_error(
+                expr.keyword.line, "Can't use 'this' outside of a class."
+            )
             return None
         self.resolve_local(expr, expr.keyword)
         return None

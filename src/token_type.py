@@ -7,8 +7,10 @@ class FunctionType(Enum):
     METHOD = auto()
     INITIALISER = auto()
 
+
 class ClassType(Enum):
     CLASS = auto()
+    SUBCLASS = auto()
     NONE = auto()
 
 

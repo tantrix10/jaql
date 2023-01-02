@@ -70,4 +70,5 @@ class Circle {
 
 var circle = Circle(4);
 print circle.area();
-// print 3.14;
+//var b = 3.14;
+//print b;

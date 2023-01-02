@@ -55,24 +55,24 @@ class JaqlFunction(LoxCallable):
             if self.is_initialiser:
                 return self.closure.get_at(0, "this")
             return e.value
-        
+
         if self.is_initialiser:
             return self.closure.get_at(0, "this")
         return None
-    
+
     def bind(self, instance: JaqlInstance):
         environment: Environment = Environment(self.closure)
         environment.define("this", instance)
         return JaqlFunction(self.declaration, environment, self.is_initialiser)
-
 
     def __str__(self) -> str:
         return f"<fn {self.declaration.name.lexeme}>"
 
 
 class JaqlClass(LoxCallable):
-    def __init__(self, name, methods) -> None:
+    def __init__(self, name, superclass, methods) -> None:
         self.name = name
+        self.superclass = superclass
         self.methods = methods
 
     def __str__(self) -> str:
@@ -94,7 +94,6 @@ class JaqlClass(LoxCallable):
     def find_method(self, name: str):
         if name in self.methods:
             return self.methods.get(name)
+        if self.superclass is not None:
+            return self.superclass.find_method(name)
         return None
-
-
-
