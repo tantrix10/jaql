@@ -89,7 +89,7 @@ class Interpreter:
             return False
         if right is None:
             return False
-        return left == right or left is right
+        return left == right
 
     def check_number_operands(self, operator: Token, left: Any, right: Any):
         if isinstance(left, Number) and isinstance(right, Number):
