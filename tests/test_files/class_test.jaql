@@ -12,3 +12,62 @@ print bagel;
 
 bagel.a = "property assignment";
 print bagel.a;
+
+class Box {}
+
+fun notMethod(argument) {
+  print "called function with " + argument;
+}
+
+var box = Box();
+box.function = notMethod;
+box.function("argument");
+
+class Bacon {
+  eat() {
+    print "Crunch crunch crunch!";
+  }
+}
+
+Bacon().eat(); 
+
+class Cake {
+  taste() {
+    var adjective = "delicious";
+    print "The " + this.flavor + " cake is " + adjective + "!";
+  }
+}
+
+var cake = Cake();
+cake.flavor = "German chocolate";
+cake.taste();
+
+
+class Foo {
+  init(test) {
+    this.test = test;
+    print this;
+  }
+  hello (additional){
+    print this.test+additional;
+  }
+}
+
+var foo = Foo("hello world");
+foo.hello("!");
+print foo.init("new init");
+foo.hello("!!");
+
+class Circle {
+  init(radius) {
+    this.radius = radius;
+  }
+
+  area (){
+    return this.radius * this.radius * 3; // 3.14159
+  }
+}
+
+var circle = Circle(4);
+print circle.area();
+// print 3.14;

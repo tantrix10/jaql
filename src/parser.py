@@ -15,6 +15,7 @@ from src.types.Expr import (
     Literal,
     Logical,
     Set,
+    This,
     Unary,
     Variable,
 )
@@ -328,6 +329,8 @@ class Parser:
             ]
         ):
             return Literal(None)
+        elif self.match([TokenType.THIS,]):
+            return This(self.previous())
         elif self.match([TokenType.NUMBER, TokenType.STRING]):
             return Literal(self.previous().literal)
         elif self.match(

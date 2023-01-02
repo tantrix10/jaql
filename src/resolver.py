@@ -1,7 +1,7 @@
 from typing import Union
 
 from src.token import Token
-from src.token_type import FunctionType
+from src.token_type import ClassType, FunctionType
 from src.types.Expr import (
     Assign,
     Binary,
@@ -12,6 +12,7 @@ from src.types.Expr import (
     Literal,
     Logical,
     Set,
+    This,
     Unary,
     Variable,
 )
@@ -34,6 +35,7 @@ class Resolver:
         self.interpreter = interpreter
         self.scopes = []
         self.current_function = FunctionType.NONE
+        self.current_class = ClassType.NONE
         self.jaql = jaql
 
     def scopes_empty(self):
@@ -115,12 +117,36 @@ class Resolver:
         if self.current_function == FunctionType.NONE:
             self.jaql.add_error(stmt.keyword.line, "Can't return from top-level code.")
         if stmt.value is not None:
+            if self.current_function == FunctionType.INITIALISER:
+                self.jaql.add_error(stmt.keyword.line, "Can't return a value from an initializer.")
             self.resolve_single(stmt.value)
         return None
 
     def visitClassStmt(self, stmt: Class):
+        encolsing_class: ClassType = self.current_class
+        self.current_class = ClassType.CLASS
+
         self.declare(stmt.name)
         self.define(stmt.name)
+
+        self.start_scope()
+        self.scopes[-1]["this"] = True
+
+        for method in stmt.methods:
+            declaration = FunctionType.METHOD
+            if method.name.lexeme == "init":
+                declaration = FunctionType.INITIALISER
+            self.resolve_function(method, declaration)
+        
+        self.end_scope()
+        self.current_class = encolsing_class
+        return None
+    
+    def visitThisExpr(self, expr: This):
+        if self.current_class == ClassType.NONE:
+            self.jaql.add_error(expr.keyword.line, "Can't use 'this' outside of a class.")
+            return None
+        self.resolve_local(expr, expr.keyword)
         return None
 
     def visitGetExpr(self, expr: Get):

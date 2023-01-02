@@ -57,6 +57,7 @@ def main():
             "Call     :: callee: Expr, paren: Token, arguments: list[Expr]",
             "Get      :: obj: Expr, name: Token",
             "Set      :: obj: Expr, name: Token, value: Expr",
+            "This     :: keyword: Token",
             "Grouping :: expression: Expr",
             "Literal  :: value: Any",
             "Logical  :: left: Expr, operator: Token, right: Expr",

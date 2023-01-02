@@ -18,6 +18,7 @@ from src.types.Expr import (
     Literal,
     Logical,
     Set,
+    This,
     Unary,
     Variable,
 )
@@ -123,7 +124,7 @@ class Interpreter:
             return self.globals.get(name)
 
     def visitFunctionStmt(self, stmt: Function):
-        function = JaqlFunction(declaration=stmt, closure=self.environment)
+        function = JaqlFunction(declaration=stmt, closure=self.environment,is_initialiser=False)
         self.environment.define(stmt.name.lexeme, function)
         return None
 
@@ -158,19 +159,30 @@ class Interpreter:
         self.jaql.add_error(expr.name.line, "Only instances have properties.")
 
     def visitSetExpr(self, expr: Set):
-        obj = self.evaluate(expr.obj)
+        obj = self.evaluate(expr.obj)  # type: ignore
         if not isinstance(obj, JaqlInstance):
             self.jaql.add_error(expr.name.line, "Only instances have properties.")
 
         value = self.evaluate(expr.value)
+        obj: JaqlInstance
         obj.set(expr.name, value)
         return value
 
     def visitClassStmt(self, stmt: Class):
         self.environment.define(stmt.name.lexeme, None)
-        klass = JaqlClass(stmt.name.lexeme)
+
+        methods = {}
+
+        for method in stmt.methods:
+            function: JaqlFunction = JaqlFunction(method, self.environment, method.name.lexeme == "init")
+            methods[method.name.lexeme] = function
+
+        klass = JaqlClass(stmt.name.lexeme, methods)
         self.environment.assign(stmt.name, klass)
         return None
+    
+    def visitThisExpr(self, expr: This):
+        return self.look_up_variable(expr.keyword,expr)
 
     def visitReturnStmt(self, stmt: Return):
         value = None

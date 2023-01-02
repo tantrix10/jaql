@@ -61,6 +61,14 @@ class Set(Expr):
         return visitor.visitSetExpr(self)
 
 
+class This(Expr):
+    def __init__(self, keyword: Token):
+        self.keyword = keyword
+
+    def accept(self, visitor):
+        return visitor.visitThisExpr(self)
+
+
 class Grouping(Expr):
     def __init__(self, expression: Expr):
         self.expression = expression
