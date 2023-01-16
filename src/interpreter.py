@@ -18,18 +18,14 @@ from src.types.Expr import (
     Literal,
     Logical,
     Set,
-    Super,
-    This,
     Unary,
     Variable,
 )
 from src.types.Stmt import (
     Block,
-    Class,
     Expression,
     Function,
     If,
-    Print,
     Return,
     Stmt,
     Var,
@@ -47,6 +43,7 @@ class Interpreter:
         self.jaql = jaql
 
         self.environment = self.globals
+        self.qasm = "OPENQASM 3.0\n"
 
     def interpret(self, statements: list[Stmt]):
         try:
@@ -142,16 +139,12 @@ class Interpreter:
         self.evaluate(stmt.expression)
         return None
 
-    def visitPrintStmt(self, stmt: Print):
-        value = self.evaluate(stmt.expression)
-        print(self.stringify(value))
-        return None
-
     def visitVarStmt(self, stmt: Var):
         value = None
         if stmt.initialiser is not None:
             value = self.evaluate(stmt.initialiser)
         self.environment.define(name=stmt.name.lexeme, value=value)
+        self.qasm += f"{stmt.name.lexeme}"
         return None
 
     def visitGetExpr(self, expr: Get):
@@ -171,61 +164,13 @@ class Interpreter:
         obj.set(expr.name, value)
         return value
 
-    def visitClassStmt(self, stmt: Class):
-        superclass: Optional[Variable] = None
-
-        if stmt.superclass is not None:
-            superclass = self.evaluate(stmt.superclass)
-            if not isinstance(superclass, JaqlClass):
-                self.jaql.add_runtime_error(
-                    JaqlRuntimeError(
-                        stmt.superclass.name, "Superclass must be a class."
-                    )
-                )
-
-        self.environment.define(stmt.name.lexeme, None)
-
-        if stmt.superclass is not None:
-            self.environment = Environment(self.environment)
-            self.environment.define("super", superclass)
-
-        methods = {}
-
-        for method in stmt.methods:
-            function: JaqlFunction = JaqlFunction(
-                method, self.environment, method.name.lexeme == "init"
-            )
-            methods[method.name.lexeme] = function
-
-        klass = JaqlClass(stmt.name.lexeme, superclass, methods)
-        if superclass is not None:
-            self.environment: Environment = self.environment.enclosing  # type: ignore
-        self.environment.assign(stmt.name, klass)  # type: ignore
-        return None
-
-    def visitSuperExpr(self, expr: Super):
-        distance = self.locals.get(expr)
-        superclass: JaqlClass = self.environment.get_at(distance, "super")  # type: ignore
-        object: JaqlInstance = self.environment.get_at(distance - 1, "this")  # type: ignore
-        method: JaqlFunction = superclass.find_method(expr.method.lexeme)  # type: ignore
-        if method is None:
-            self.jaql.add_runtime_error(
-                JaqlRuntimeError(
-                    expr.method, f"Undefined property {expr.method.lexeme}."
-                )
-            )
-        return method.bind(object)
-
-    def visitThisExpr(self, expr: This):
-        return self.look_up_variable(expr.keyword, expr)
-
     def visitReturnStmt(self, stmt: Return):
         value = None
         if stmt.value is not None:
             value = self.evaluate(stmt.value)
         raise ReturnException(value)
 
-    def visitBlockStmt(self, stmt: Block):
+    def visitBlockStmt(self, stmt: Block): 
         self.execute_block(stmt.statements, Environment(enclosing=self.environment))
         return None
 

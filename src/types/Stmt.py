@@ -40,18 +40,6 @@ class Function(Stmt):
         return visitor.visitFunctionStmt(self)
 
 
-class Class(Stmt):
-    def __init__(
-        self, name: Token, superclass: Optional[Variable], methods: list[Function]
-    ):
-        self.name = name
-        self.superclass = superclass
-        self.methods = methods
-
-    def accept(self, visitor):
-        return visitor.visitClassStmt(self)
-
-
 class If(Stmt):
     def __init__(self, condition: Expr, then_branch: Stmt, else_branch: Optional[Stmt]):
         self.condition = condition
@@ -60,14 +48,6 @@ class If(Stmt):
 
     def accept(self, visitor):
         return visitor.visitIfStmt(self)
-
-
-class Print(Stmt):
-    def __init__(self, expression: Expr):
-        self.expression = expression
-
-    def accept(self, visitor):
-        return visitor.visitPrintStmt(self)
 
 
 class Return(Stmt):

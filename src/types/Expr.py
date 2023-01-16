@@ -61,23 +61,6 @@ class Set(Expr):
         return visitor.visitSetExpr(self)
 
 
-class Super(Expr):
-    def __init__(self, keyword: Token, method: Token):
-        self.keyword = keyword
-        self.method = method
-
-    def accept(self, visitor):
-        return visitor.visitSuperExpr(self)
-
-
-class This(Expr):
-    def __init__(self, keyword: Token):
-        self.keyword = keyword
-
-    def accept(self, visitor):
-        return visitor.visitThisExpr(self)
-
-
 class Grouping(Expr):
     def __init__(self, expression: Expr):
         self.expression = expression
