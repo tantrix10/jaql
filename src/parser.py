@@ -38,6 +38,7 @@ class Parser:
         self.size = len(tokens)
         self.current = 0
         self.has_error = False
+        self.qasm = """OPENQASM 2.0;\ninclude 'qelib1.inc'\n\n"""
 
     def statement(self):
         if self.match(
@@ -127,6 +128,7 @@ class Parser:
         ):
             initialiser = self.expression()
         self.consume(TokenType.SEMICOLON, "Except ';' after variable declaration")
+        self.qasm += f"{name.lexeme} = {initialiser.value}\n"
         return Var(name, initialiser)  # type: ignore
 
     def parse(self):
@@ -144,8 +146,6 @@ class Parser:
             if self.previous().type is TokenType.SEMICOLON:
                 return
             match self.peek().type:
-                case TokenType.CLASS:
-                    return
                 case TokenType.FUN:
                     return
                 case TokenType.VAR:
@@ -155,8 +155,6 @@ class Parser:
                 case TokenType.IF:
                     return
                 case TokenType.WHILE:
-                    return
-                case TokenType.PRINT:
                     return
                 case TokenType.RETURN:
                     return
@@ -240,7 +238,7 @@ class Parser:
             ]
         ):
             else_branch = self.statement()
-
+        self.qasm += f"{condition}, {then_branch}, {else_branch}\n"
         return If(condition, then_branch, else_branch)
 
     def expression_statement(self):

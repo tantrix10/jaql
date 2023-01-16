@@ -2,9 +2,11 @@
 JAQL - Just Another Quantum Language. A Lox implementation attempting to be quantum, eventually. 
 
 
-## TODOS:
+This is step 1 of the classical -> quantum. Take this language, with some elements removed and generate qasm from the parser.
 
-    1. My error reporting implementation kind of sucks, need to overhaul + fix. Should only be raising errors and catching where appropriate, that prevents this bad passing round of a Jaql obj.
-    2. Line counting is wrong
-    3. floats are broken if a class or function is defined in file: Expect property name after '.'.
-    4. bool == isn't correct, we use python ==, so e.g. True == 1 -> True
+Clearly this isn't especially meaningful, but it's a fun experiment in getting the elements of classical computing, quantum.
+
+There are only two types, floats and strings, I'll just use a flag qubit at the front to distinquish.
+
+There is an interesting question on if a variable should be a state on a register or a unitary that can be 'implemented'. 
+Should we allow for copying, knowing there's no quantum info here?
