@@ -1,3 +1,6 @@
+pub mod memory;
+
+
 #[repr(u8)]
 pub enum OpCode {
     OP_RETURN,
@@ -21,11 +24,11 @@ impl Chunk {
     pub fn write_chunk(&mut self, byte: u8){
         if self.capacity < self.count + 1 {
             let old_capacity: i64 = self.capacity;
-            self.capacity = self.grow_capacity()
+            self.capacity = memory::grow_capacity()
         }
+
+        self.code[self.count] = byte;
+        self.count += 1;
     }
 
-    fn grow_capacity(&mut self)->i64{
-        0
-    }
 }
