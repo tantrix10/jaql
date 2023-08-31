@@ -1,5 +1,6 @@
 use crate::chunk::Chunk;
 use crate::ops;
+use crate::value::Value;
 
 #[derive(Debug, PartialEq, Eq)]
 #[repr(u8)]
@@ -29,14 +30,38 @@ impl VM {
     }
 
     fn run(&mut self) -> InterpretResult {
-        for instruction in self.chunk.code.iter() {
-            let result: InterpretResult = match instruction {
-                &ops::OP_RETURN => return InterpretResult::Ok,
-                &ops::OP_CONSTANT => InterpretResult::Ok,
-                _ => InterpretResult::CompileError,
-            };
-        }
+        // for instruction in self.chunk.code.iter() {
+        //     // let result: InterpretResult =
+        //     match instruction {
+        //         &ops::OP_RETURN => {
+        //             println!("RETURNING NOW");
+        //             return InterpretResult::Ok
+        //         },
+        //         &ops::OP_CONSTANT => {
+        //             println!("WE GOT A CONSTANT");
+        //             // return InterpretResult::Ok;
+        //         },
+        //         _ => continue //InterpretResult::CompileError,
+        //     };
+        let mut offset: usize = 0;
+        let length: usize = self.chunk.code.len();
+        while offset < length {
+            println!("{:0width$}", offset, width = 4);
 
+            let instruction: u8 = self.chunk.code[offset];
+            match instruction {
+                ops::OP_RETURN => {
+                    println!("Returning");
+                    return InterpretResult::Ok;
+                    offset += 1;
+                }
+                ops::OP_CONSTANT => {
+                    println!("Constants");
+                    offset += 2;
+                }
+                _byte => continue,
+            }
+        }
         return InterpretResult::Ok;
     }
 }

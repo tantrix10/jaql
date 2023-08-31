@@ -23,5 +23,9 @@ fn main() {
     blob.write_chunk(constant2, 123);
     blob.write_chunk(ops::OP_RETURN as u8, 123);
 
-    disassemble::dissasemble_chunk(&blob, "test");
+    let mut vm: VM = VM::new(blob);
+
+    vm.interpret();
+
+    // disassemble::dissasemble_chunk(&blob, "test");
 }
