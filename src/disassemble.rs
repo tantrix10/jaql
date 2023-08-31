@@ -16,6 +16,13 @@ pub fn dissasemble_chunk(as_chunk: &Chunk, name: &str){
 
 fn dissasemble_instruction(as_chunk: &Chunk, offset: usize) -> usize{
     print!("{:0width$}", offset, width = 4);
+
+    if (offset>0) && (as_chunk.lines[offset] == as_chunk.lines[offset-1]){
+        print!("    | ");
+    }else{
+        print!(" {:0width$} ", as_chunk.lines[offset], width = 4);
+    }
+
     let instruction: u8 = as_chunk.code[offset];
     let new_offset: usize = match instruction {
         ops::OP_RETURN => {
