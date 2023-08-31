@@ -9,7 +9,7 @@ pub enum InterpretResult {
     RuntimeError,
 }
 
-pub struct VM{
+pub struct VM {
     pub chunk: Chunk,
     // TODO: in lox this is a pointer straight to the instruction
     // dereffing a pointer is faster than lookup, see how this goes
@@ -18,27 +18,25 @@ pub struct VM{
 
 impl VM {
     pub fn new(chunk: Chunk) -> Self {
-        VM{
+        VM {
             chunk: chunk,
             // ip: chunk.code
         }
     }
 
-    pub fn interpret(&mut self) -> InterpretResult{
+    pub fn interpret(&mut self) -> InterpretResult {
         return self.run();
     }
 
-    fn run(&mut self,)->InterpretResult{
-
-        for instruction in self.chunk.code.iter(){
+    fn run(&mut self) -> InterpretResult {
+        for instruction in self.chunk.code.iter() {
             let result: InterpretResult = match instruction {
-                &ops::OP_RETURN => {return InterpretResult::Ok},
-                &ops::OP_CONSTANT=> InterpretResult::Ok,
-                _ => InterpretResult::CompileError
+                &ops::OP_RETURN => return InterpretResult::Ok,
+                &ops::OP_CONSTANT => InterpretResult::Ok,
+                _ => InterpretResult::CompileError,
             };
         }
 
         return InterpretResult::Ok;
     }
 }
-

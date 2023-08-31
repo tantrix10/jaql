@@ -7,7 +7,6 @@ use iota::iota;
 //     OpConstant = 2,
 // }
 
-
 iota! {
     pub const
     OP_RETURN : u8 = iota;,

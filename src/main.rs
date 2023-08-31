@@ -1,11 +1,11 @@
 mod chunk;
 mod disassemble;
-mod value;
 mod ops;
+mod value;
 mod vm;
 
-use chunk::{Chunk};
-use vm::{VM};
+use chunk::Chunk;
+use vm::VM;
 
 fn main() {
     println!("Running main.");
@@ -14,10 +14,8 @@ fn main() {
 
     let mut blob = Chunk::new();
 
-
     let constant: u8 = blob.write_constant(42.0);
     let constant2: u8 = blob.write_constant(43.0);
-
 
     blob.write_chunk(ops::OP_CONSTANT as u8, 123);
     blob.write_chunk(constant, 123);
