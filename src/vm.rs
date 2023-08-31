@@ -42,7 +42,10 @@ impl VM {
                     return InterpretResult::Ok;
                 }
                 ops::OP_CONSTANT => {
-                    println!("Constants, {:?}", self.chunk.constants.values[self.chunk.code[offset + 1] as usize]);
+                    println!(
+                        "Constants, {:?}",
+                        self.chunk.constants.values[self.chunk.code[offset + 1] as usize]
+                    );
                     offset += 2;
                 }
                 _byte => continue,
