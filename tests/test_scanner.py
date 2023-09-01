@@ -2,6 +2,7 @@ import pytest
 
 from src.scanner import Scanner
 from src.token_type import TokenType
+from src.jaql import Jaql
 
 
 @pytest.mark.parametrize(
@@ -45,7 +46,8 @@ from src.token_type import TokenType
     ),
 )
 def test_reserved_words_and_tokens_parsing(input, token_type):
-    scanner = Scanner(input)
+    jaql = Jaql('')
+    scanner = Scanner(input, jaql)
     scanner.scan_tokens()
     assert scanner.tokens[0].type == token_type
 
@@ -64,6 +66,7 @@ def test_none_tokens(input):
     Note: You cannot have a file of just //, '', or whitespace
     greater than 1-space. Something to fix
     """
-    scanner = Scanner(input)
+    jaql = Jaql('')
+    scanner = Scanner(input, jaql)
     scanner.scan_tokens()
     assert scanner.tokens[0].type == TokenType.EOJF
