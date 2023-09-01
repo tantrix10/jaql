@@ -19,9 +19,12 @@ fn main() {
 
     blob.write_chunk(ops::OP_CONSTANT as u8, 123);
     blob.write_chunk(constant, 123);
+
     blob.write_chunk(ops::OP_CONSTANT as u8, 123);
-    blob.write_chunk(constant2, 123);
-    blob.write_chunk(ops::OP_RETURN as u8, 123);
+    blob.write_chunk(constant2, 124);
+
+    blob.write_chunk(ops::OP_SUBTRACT, 124);
+    blob.write_chunk(ops::OP_RETURN as u8, 125);
 
     let mut vm: VM = VM::new(blob);
 

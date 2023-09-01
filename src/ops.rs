@@ -10,5 +10,10 @@ use iota::iota;
 iota! {
     pub const
     OP_RETURN : u8 = iota;,
-    OP_CONSTANT
+    OP_CONSTANT,
+    OP_NEGATE,
+    OP_ADD,
+    OP_SUBTRACT,
+    OP_MULTIPLY,
+    OP_DIVIDE
 }

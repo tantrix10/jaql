@@ -26,6 +26,11 @@ pub fn dissasemble_instruction(as_chunk: &Chunk, offset: usize) -> usize {
     let new_offset: usize = match instruction {
         ops::OP_RETURN => simple_instruction("OP_RETURN", offset),
         ops::OP_CONSTANT => constant_instruction("OP_CONSTANT", as_chunk, offset),
+        ops::OP_NEGATE => simple_instruction("OP_NEGATE", offset),
+        ops::OP_ADD => simple_instruction("OP_ADD", offset),
+        ops::OP_SUBTRACT => simple_instruction("OP_SUBTRACT", offset),
+        ops::OP_MULTIPLY => simple_instruction("OP_MULTIPLY", offset),
+        ops::OP_DIVIDE => simple_instruction("OP_DIVIDE", offset),
         _byte => 1,
     };
     new_offset
