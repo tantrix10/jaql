@@ -13,7 +13,7 @@ pub fn dissasemble_chunk(as_chunk: &Chunk, name: &str) {
     }
 }
 
-fn dissasemble_instruction(as_chunk: &Chunk, offset: usize) -> usize {
+pub fn dissasemble_instruction(as_chunk: &Chunk, offset: usize) -> usize {
     print!("{:0width$}", offset, width = 4);
 
     if (offset > 0) && (as_chunk.lines[offset] == as_chunk.lines[offset - 1]) {
