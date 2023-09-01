@@ -8,3 +8,4 @@ JAQL - Just Another Quantum Language. A Lox implementation attempting to be quan
     2. Line counting is wrong
     3. floats are broken if a class or function is defined in file: Expect property name after '.'.
     4. bool == isn't correct, we use python ==, so e.g. True == 1 -> True
+    5. Implement [test suite](https://github.com/munificent/craftinginterpreters/tree/master/test)
